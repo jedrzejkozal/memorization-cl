@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/08affa0295df4d1b824aeac6d2ce9948/artifacts
+end_time: 1709916771186
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 08affa0295df4d1b824aeac6d2ce9948
+run_name: seed reproduction n_tasks=50
+run_uuid: 08affa0295df4d1b824aeac6d2ce9948
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1709907632863
+status: 3
+tags: []
+user_id: jkozal

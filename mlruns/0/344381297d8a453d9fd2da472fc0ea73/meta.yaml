@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/344381297d8a453d9fd2da472fc0ea73/artifacts
+end_time: 1717415825206
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 344381297d8a453d9fd2da472fc0ea73
+run_name: resilient-ant-500
+run_uuid: 344381297d8a453d9fd2da472fc0ea73
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717415825181
+status: 3
+tags: []
+user_id: jkozal

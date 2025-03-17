@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/c36a8f0a4967423d996df8d8cc24deb9/artifacts
+end_time: 1716844877461
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c36a8f0a4967423d996df8d8cc24deb9
+run_name: colorful-rook-960
+run_uuid: c36a8f0a4967423d996df8d8cc24deb9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716844877437
+status: 3
+tags: []
+user_id: jkozal

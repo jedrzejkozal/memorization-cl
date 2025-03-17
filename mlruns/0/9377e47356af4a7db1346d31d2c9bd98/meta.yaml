@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/9377e47356af4a7db1346d31d2c9bd98/artifacts
+end_time: 1709936807391
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9377e47356af4a7db1346d31d2c9bd98
+run_name: der++ same augmentations resnet18 normal aug for all
+run_uuid: 9377e47356af4a7db1346d31d2c9bd98
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1709932439412
+status: 3
+tags: []
+user_id: jkozal

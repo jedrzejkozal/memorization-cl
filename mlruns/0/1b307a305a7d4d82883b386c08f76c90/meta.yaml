@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/1b307a305a7d4d82883b386c08f76c90/artifacts
+end_time: 1717419673829
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 1b307a305a7d4d82883b386c08f76c90
+run_name: trusting-chimp-157
+run_uuid: 1b307a305a7d4d82883b386c08f76c90
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717419219002
+status: 3
+tags: []
+user_id: jkozal

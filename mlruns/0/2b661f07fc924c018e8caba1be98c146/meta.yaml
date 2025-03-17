@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/2b661f07fc924c018e8caba1be98c146/artifacts
+end_time: 1710425211008
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 2b661f07fc924c018e8caba1be98c146
+run_name: fetril half classes in the first task
+run_uuid: 2b661f07fc924c018e8caba1be98c146
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1710423089496
+status: 1
+tags: []
+user_id: jkozal

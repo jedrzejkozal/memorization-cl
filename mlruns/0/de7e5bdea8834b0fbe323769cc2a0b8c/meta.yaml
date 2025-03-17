@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/de7e5bdea8834b0fbe323769cc2a0b8c/artifacts
+end_time: 1712803103695
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: de7e5bdea8834b0fbe323769cc2a0b8c
+run_name: seed resnet18, n_tasks=10
+run_uuid: de7e5bdea8834b0fbe323769cc2a0b8c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1712796657571
+status: 3
+tags: []
+user_id: jkozal

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/ec932d507511463cbdd12ea07f3ced27/artifacts
+end_time: 1712796654829
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: ec932d507511463cbdd12ea07f3ced27
+run_name: seed++ weight interpolation, layer norm, n_tasks=10
+run_uuid: ec932d507511463cbdd12ea07f3ced27
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1712790262441
+status: 3
+tags: []
+user_id: jkozal

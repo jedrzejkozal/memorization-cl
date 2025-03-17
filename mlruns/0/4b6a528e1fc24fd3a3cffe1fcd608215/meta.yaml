@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/4b6a528e1fc24fd3a3cffe1fcd608215/artifacts
+end_time: 1717416290806
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4b6a528e1fc24fd3a3cffe1fcd608215
+run_name: likeable-perch-357
+run_uuid: 4b6a528e1fc24fd3a3cffe1fcd608215
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717416290781
+status: 3
+tags: []
+user_id: jkozal

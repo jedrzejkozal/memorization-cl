@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/3269a1b240234304be8922a920648704/artifacts
+end_time: 1716844458867
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3269a1b240234304be8922a920648704
+run_name: delicate-cow-537
+run_uuid: 3269a1b240234304be8922a920648704
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716844458841
+status: 3
+tags: []
+user_id: jkozal

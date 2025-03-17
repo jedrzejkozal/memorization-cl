@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/e8c09f1cccaf48718b80707999e079a3/artifacts
+end_time: 1716883389549
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: e8c09f1cccaf48718b80707999e079a3
+run_name: amusing-ant-971
+run_uuid: e8c09f1cccaf48718b80707999e079a3
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716883389537
+status: 3
+tags: []
+user_id: jkozal

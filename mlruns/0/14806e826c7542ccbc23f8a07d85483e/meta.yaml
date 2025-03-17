@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/14806e826c7542ccbc23f8a07d85483e/artifacts
+end_time: 1716888124950
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 14806e826c7542ccbc23f8a07d85483e
+run_name: intelligent-kit-769
+run_uuid: 14806e826c7542ccbc23f8a07d85483e
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716887579190
+status: 3
+tags: []
+user_id: jkozal

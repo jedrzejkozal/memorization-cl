@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/3a68e10be29f4cfb8850f88f8d3a40bb/artifacts
+end_time: 1716883547723
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 3a68e10be29f4cfb8850f88f8d3a40bb
+run_name: legendary-conch-795
+run_uuid: 3a68e10be29f4cfb8850f88f8d3a40bb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716883547699
+status: 3
+tags: []
+user_id: jkozal

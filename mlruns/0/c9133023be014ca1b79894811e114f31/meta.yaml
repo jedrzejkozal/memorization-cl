@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/c9133023be014ca1b79894811e114f31/artifacts
+end_time: 1716845233028
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c9133023be014ca1b79894811e114f31
+run_name: nimble-bat-83
+run_uuid: c9133023be014ca1b79894811e114f31
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716845233004
+status: 3
+tags: []
+user_id: jkozal

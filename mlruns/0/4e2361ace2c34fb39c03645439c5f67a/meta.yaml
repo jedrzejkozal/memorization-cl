@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/4e2361ace2c34fb39c03645439c5f67a/artifacts
+end_time: 1712850103983
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4e2361ace2c34fb39c03645439c5f67a
+run_name: seed++ weight interpolation + batch norm collection, layer norm, n_tasks=10
+run_uuid: 4e2361ace2c34fb39c03645439c5f67a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1712843048009
+status: 3
+tags: []
+user_id: jkozal

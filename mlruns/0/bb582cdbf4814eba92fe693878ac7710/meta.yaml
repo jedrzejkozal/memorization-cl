@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/bb582cdbf4814eba92fe693878ac7710/artifacts
+end_time: 1709839228631
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bb582cdbf4814eba92fe693878ac7710
+run_name: der++ same augmentations resnet32
+run_uuid: bb582cdbf4814eba92fe693878ac7710
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1709828604577
+status: 1
+tags: []
+user_id: jkozal

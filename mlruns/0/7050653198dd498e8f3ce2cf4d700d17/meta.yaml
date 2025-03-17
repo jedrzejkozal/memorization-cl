@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/7050653198dd498e8f3ce2cf4d700d17/artifacts
+end_time: 1717416900376
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 7050653198dd498e8f3ce2cf4d700d17
+run_name: shivering-hawk-931
+run_uuid: 7050653198dd498e8f3ce2cf4d700d17
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717416900351
+status: 3
+tags: []
+user_id: jkozal

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/55732c11db9c4a609362fade47589ac5/artifacts
+end_time: 1717416663168
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 55732c11db9c4a609362fade47589ac5
+run_name: inquisitive-hog-851
+run_uuid: 55732c11db9c4a609362fade47589ac5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717416663143
+status: 3
+tags: []
+user_id: jkozal

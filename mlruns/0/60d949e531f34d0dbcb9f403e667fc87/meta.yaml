@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/60d949e531f34d0dbcb9f403e667fc87/artifacts
+end_time: 1717416407277
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 60d949e531f34d0dbcb9f403e667fc87
+run_name: blushing-lamb-928
+run_uuid: 60d949e531f34d0dbcb9f403e667fc87
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717416407252
+status: 3
+tags: []
+user_id: jkozal

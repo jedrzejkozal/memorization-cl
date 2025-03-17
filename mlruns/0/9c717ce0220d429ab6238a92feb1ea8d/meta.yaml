@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/9c717ce0220d429ab6238a92feb1ea8d/artifacts
+end_time: 1717419708435
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9c717ce0220d429ab6238a92feb1ea8d
+run_name: marvelous-shrike-419
+run_uuid: 9c717ce0220d429ab6238a92feb1ea8d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717419708410
+status: 3
+tags: []
+user_id: jkozal

@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/4cafff5653ad4cf39073812d14ee5bfd/artifacts
+end_time: 1717426747774
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 4cafff5653ad4cf39073812d14ee5bfd
+run_name: lyrical-koi-246
+run_uuid: 4cafff5653ad4cf39073812d14ee5bfd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717425185674
+status: 3
+tags: []
+user_id: jkozal

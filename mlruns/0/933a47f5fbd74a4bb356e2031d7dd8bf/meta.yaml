@@ -1,0 +1,15 @@
+artifact_uri: file:///home/jkozal/Documents/RIT/repo_template/mlruns/0/933a47f5fbd74a4bb356e2031d7dd8bf/artifacts
+end_time: 1716894492704
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 933a47f5fbd74a4bb356e2031d7dd8bf
+run_name: classy-hound-316
+run_uuid: 933a47f5fbd74a4bb356e2031d7dd8bf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1716894492679
+status: 3
+tags: []
+user_id: jkozal
