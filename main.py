@@ -122,9 +122,12 @@ def run_experiment(args):
     if hasattr(importlib.import_module('models.' + args.model), 'Buffer') and args.minibatch_size is None:
         args.minibatch_size = dataset.get_minibatch_size()
 
-    if args.backbone is None:
+    if args.backbone is None and hasattr(dataset, 'get_backbone_name'):
         args.backbone = dataset.get_backbone_name()
-    backbone = get_backbone(args.backbone, dataset.N_CLASSES, dataset.N_TASKS, dataset.N_CLASSES_PER_TASK, args)
+    if args.backbone is not None:
+        backbone = get_backbone(args.backbone, dataset.N_CLASSES, dataset.N_TASKS, dataset.N_CLASSES_PER_TASK, args)
+    else:
+        backbone = dataset.get_backbone()
     print(f'backbone number of parameters = {get_n_parameters(backbone)}')
 
     loss = dataset.get_loss()
