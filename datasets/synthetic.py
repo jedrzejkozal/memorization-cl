@@ -53,7 +53,7 @@ class SequentialSynthetic(ContinualBenchmark):
             all_samples = self.nonlinearities(all_samples)
 
         all_samples_train, all_samples_test, all_labels_train, all_labels_test, all_lt_train, all_lt_test = train_test_split(
-            all_samples, all_labels, all_lt, test_size=0.2, stratify=all_labels, random_state=self.args.seed)
+            all_samples, all_labels, all_lt, test_size=0.2, stratify=np.column_stack((all_labels, all_lt)), random_state=self.args.seed)
 
         self.train_samples = all_samples_train
         self.train_labels = all_labels_train
