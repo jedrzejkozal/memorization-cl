@@ -30,6 +30,7 @@ class ContinualBenchmark:
         """
         self.train_loader = None
         self.test_loaders = []
+        self.longtail_loaders = []
         self.i = 0
         self.args = args
         self.image_size = args.img_size

@@ -18,20 +18,6 @@ from utils.mlflow_logger import MLFlowLogger
 from utils.status import ProgressBar
 
 
-def mask_classes(outputs: torch.Tensor, dataset: ContinualBenchmark, k: int) -> None:
-    """
-    Given the output tensor, the dataset at hand and the current task,
-    masks the former by setting the responses for the other tasks at -inf.
-    It is used to obtain the results for the task-il setting.
-    :param outputs: the output tensor
-    :param dataset: the continual dataset
-    :param k: the task index
-    """
-    outputs[:, 0:k * dataset.N_CLASSES_PER_TASK] = -float('inf')
-    outputs[:, (k + 1) * dataset.N_CLASSES_PER_TASK:
-            dataset.N_TASKS * dataset.N_CLASSES_PER_TASK] = -float('inf')
-
-
 def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, debug=False) -> Tuple[list, list]:
     """
     Evaluates the accuracy of the model for each past task.
@@ -52,12 +38,26 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
 
     train_acc, train_acc_mask_classes = compute_acc(model, dataset, k, dataset.train_loader, debug=debug)
 
+    test_lt_accs, test_lt_accs_mask_classes = [], []
+    for k, lt_loader in enumerate(dataset.longtail_loaders):
+        if last and k < len(dataset.longtail_loaders) - 1:
+            continue
+        acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, lt_loader, debug=debug)
+        test_lt_accs.append(acc_class_incr)
+        test_lt_accs_mask_classes.append(acc_task_incr)
+
     model.net.train(status)
     print('\nevaluation task train acc:')
     print('{:.2f}'.format(train_acc))
     print('\nevaluation task test accs:')
     accs_str = ''
     for a in test_accs:
+        accs_str += '{:.2f}, '.format(a)
+    accs_str = accs_str[:-2]
+    print(accs_str)
+    print('\nevaluation task longtail accs:')
+    accs_str = ''
+    for a in test_lt_accs:
         accs_str += '{:.2f}, '.format(a)
     accs_str = accs_str[:-2]
     print(accs_str)
@@ -90,6 +90,20 @@ def compute_acc(model, dataset, k, dataloader, debug=False):
     acc_class_incr = correct / total * 100 if 'class-il' in model.COMPATIBILITY else 0
     acc_task_incr = correct_mask_classes / total * 100
     return acc_class_incr, acc_task_incr
+
+
+def mask_classes(outputs: torch.Tensor, dataset: ContinualBenchmark, k: int) -> None:
+    """
+    Given the output tensor, the dataset at hand and the current task,
+    masks the former by setting the responses for the other tasks at -inf.
+    It is used to obtain the results for the task-il setting.
+    :param outputs: the output tensor
+    :param dataset: the continual dataset
+    :param k: the task index
+    """
+    outputs[:, 0:k * dataset.N_CLASSES_PER_TASK] = -float('inf')
+    outputs[:, (k + 1) * dataset.N_CLASSES_PER_TASK:
+            dataset.N_TASKS * dataset.N_CLASSES_PER_TASK] = -float('inf')
 
 
 def train(model: ContinualModel, dataset: ContinualBenchmark,

@@ -101,40 +101,42 @@ class SequentialSynthetic(ContinualBenchmark):
                 for idx in selected_lt:
                     idx = idx.item()
                     if np.random.rand() < long_tail_prob:
-                        # created_sample += all_latent[idx]
                         created_sample[idx] = 1
                         torch.randn(self.d_z) * 10
                         used_lt = True
-                # print(created_sample[:100])
-                # print(created_sample[100:])
-                # break
                 all_samples.append(created_sample)
                 all_labels.append(c)
                 all_lt.append(used_lt)
 
         all_samples_latents = torch.stack(all_samples)
-        # longtail_indexes = np.argwhere(all_lt).flatten()
 
         random_mapping = torch.cat([torch.randn((self.d_z-n_lt, self.d_z)), torch.randn(n_lt, self.d_z)*2])
         all_samples_latents = all_samples_latents @ random_mapping
 
         all_labels = torch.tensor(all_labels, dtype=torch.long)
+        all_lt = torch.tensor(all_lt, dtype=torch.bool)
 
         return all_samples_latents, all_labels, all_lt
 
     def get_data_loaders(self):
         train_samples, train_labels = self.get_subset(self.train_samples, self.train_labels)
         test_samples, test_labels = self.get_subset(self.test_samples, self.test_labels)
+        longtail_mask, _ = self.get_subset(self.train_lt, self.train_labels)
+        longtail_samples, longtail_labels = train_samples[longtail_mask], train_labels[longtail_mask]
 
         train_dataset = torch.utils.data.TensorDataset(train_samples, train_labels, train_samples)
         test_dataset = torch.utils.data.TensorDataset(test_samples, test_labels)
+        longtail_dataset = torch.utils.data.TensorDataset(longtail_samples, longtail_labels)
 
         train_loader = DataLoader(train_dataset,
                                   batch_size=self.args.batch_size, shuffle=True, num_workers=self.args.num_workers)
         test_loader = DataLoader(test_dataset,
                                  batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
-        self.test_loaders.append(test_loader)
+        longtail_loader = DataLoader(longtail_dataset,
+                                     batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
         self.train_loader = train_loader
+        self.test_loaders.append(test_loader)
+        self.longtail_loaders.append(longtail_loader)
 
         self.i += self.N_CLASSES_PER_TASK
 
