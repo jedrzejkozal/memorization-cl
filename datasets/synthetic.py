@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 import torch.utils.data
 import torch.nn as nn
@@ -24,7 +25,7 @@ class SequentialSynthetic(ContinualBenchmark):
 
     def __init__(self, args):
         super().__init__(args)
-        self.d_z = 512
+        self.d_z = 256
         d_z = self.d_z
         nonlinearities_list = [nn.Linear(d_z, d_z),
                                self.Quadractic(),

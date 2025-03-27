@@ -1,4 +1,5 @@
 *.pth.tar
 *.pt
+*.pth
 __pycache__/
 .vscode/

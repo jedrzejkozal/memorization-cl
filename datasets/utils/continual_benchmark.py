@@ -134,18 +134,17 @@ class ContinualBenchmark:
     def get_minibatch_size():
         raise NotImplementedError
 
-    def permute_tasks(self, train_dataset, test_dataset) -> None:
+    def permute_tasks(self, dataset) -> None:
         """
         Changes the order of classes in the dataset, so with different seed data in each task is different
         """
-        train_labels = train_dataset.targets
+        train_labels = dataset.targets
         classes = np.unique(train_labels)
         new_classes = np.random.RandomState(seed=self.args.seed).permutation(classes)
 
-        train_dataset.targets = [new_classes[c] for c in train_dataset.targets]
-        test_dataset.targets = [new_classes[c] for c in test_dataset.targets]
+        dataset.targets = [new_classes[c] for c in dataset.targets]
 
-    def store_masked_loaders(self, train_dataset: Dataset, test_dataset: Dataset) -> Tuple[DataLoader, DataLoader]:
+    def store_masked_loaders(self, train_dataset: Dataset, test_dataset: Dataset, longtail_dataset: Dataset) -> Tuple[DataLoader, DataLoader]:
         """
         Divides the dataset into tasks.
         :param train_dataset: train dataset
@@ -158,34 +157,36 @@ class ContinualBenchmark:
         else:
             n_classes = self.N_CLASSES_PER_TASK
 
-        self.select_subsets(train_dataset, test_dataset, n_classes)
+        train_mask = np.logical_and(np.array(train_dataset.targets) >= self.i,
+                                    np.array(train_dataset.targets) < self.i + n_classes)
+        test_mask = np.logical_and(np.array(test_dataset.targets) >= self.i,
+                                   np.array(test_dataset.targets) < self.i + n_classes)
+        longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,
+                                       np.array(longtail_dataset.targets) < self.i + n_classes)
+        self.select_subset(train_dataset, train_mask)
+        self.select_subset(test_dataset, test_mask)
+        self.select_subset(longtail_dataset, longtail_mask)
 
         train_loader = DataLoader(train_dataset,
                                   batch_size=self.args.batch_size, shuffle=True, num_workers=self.args.num_workers)
         test_loader = DataLoader(test_dataset,
                                  batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+        longtail_loader = DataLoader(longtail_dataset,
+                                     batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
         self.test_loaders.append(test_loader)
         self.train_loader = train_loader
+        self.longtail_loaders.append(longtail_loader)
 
         self.i += n_classes
         return train_loader, test_loader
 
-    def select_subsets(self, train_dataset, test_dataset, n_classes):
+    def select_subset(self, dataset, mask):
         """selecting data for each task
             can be overriden in the in the classes that inherit from ContinualBenchmark
         """
-        train_mask = np.logical_and(np.array(train_dataset.targets) >= self.i,
-                                    np.array(train_dataset.targets) < self.i + n_classes)
-        test_mask = np.logical_and(np.array(test_dataset.targets) >= self.i,
-                                   np.array(test_dataset.targets) < self.i + n_classes)
-
-        train_dataset.data = train_dataset.data[train_mask]
-        test_dataset.data = test_dataset.data[test_mask]
-
-        train_dataset.targets = np.array(train_dataset.targets)[train_mask]
-        test_dataset.targets = np.array(test_dataset.targets)[test_mask]
-
-        return train_dataset, test_dataset
+        dataset.data = dataset.data[mask]
+        dataset.targets = np.array(dataset.targets)[mask]
+        return dataset
 
 
 def get_previous_train_loader(train_dataset: Dataset, batch_size: int,

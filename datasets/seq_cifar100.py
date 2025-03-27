@@ -8,6 +8,8 @@ from typing import Tuple
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim
+import torch.utils
+import numpy as np
 import torchvision.transforms as transforms
 from backbones.resnet import resnet18
 from PIL import Image
@@ -83,9 +85,16 @@ class SequentialCIFAR100(ContinualBenchmark):
             train_dataset, test_dataset = get_train_val(train_dataset, self.test_transform, self.NAME)
         else:
             test_dataset = TestCIFAR100(base_path() + 'CIFAR100', train=False, download=True, transform=self.test_transform)
+        memorisation_scores = np.load('datasets/memorsation_scores_cifar100.npy')
+        longtail_indexes = np.argwhere(memorisation_scores > 0.25).flatten()
+        longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+        self.select_subset(longtail_dataset, longtail_indexes)
 
-        self.permute_tasks(train_dataset, test_dataset)
-        train, test = self.store_masked_loaders(train_dataset, test_dataset)
+        self.permute_tasks(train_dataset)
+        self.permute_tasks(test_dataset)
+        self.permute_tasks(longtail_dataset)
+
+        train, test = self.store_masked_loaders(train_dataset, test_dataset, longtail_dataset)
 
         return train, test
 

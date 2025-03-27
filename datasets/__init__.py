@@ -11,14 +11,14 @@ from argparse import Namespace
 from datasets.utils.continual_benchmark import ContinualBenchmark
 
 
-def get_all_models():
+def get_all_datasets():
     return [model.split('.')[0] for model in os.listdir('datasets')
-            if not model.find('__') > -1 and 'py' in model]
+            if not model.find('__') > -1 and '.py' in model]
 
 
 NAMES = {}
-for model in get_all_models():
-    mod = importlib.import_module('datasets.' + model)
+for dataset_name in get_all_datasets():
+    mod = importlib.import_module('datasets.' + dataset_name)
     dataset_classes_name = [x for x in mod.__dir__() if 'type' in str(type(getattr(mod, x))) and 'ContinualBenchmark' in str(inspect.getmro(getattr(mod, x))[1:])]
     for d in dataset_classes_name:
         c = getattr(mod, d)
