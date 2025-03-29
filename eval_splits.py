@@ -10,7 +10,7 @@ from torchvision.datasets import CIFAR100
 
 from backbones.resnet import resnet18
 from utils.conf import base_path_dataset as base_path
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from tqdm import tqdm
 
 
@@ -38,8 +38,13 @@ def main():
     else:
         labels = train_dataset.targets
 
-    n_folds = 10
-    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
+    if args.dataset_size != 1.0:
+        dataset_indicies = list(range(len(labels)))
+        _, selected_indicies = train_test_split(dataset_indicies, test_size=args.dataset_size, random_state=42, stratify=labels)
+        train_dataset = Subset(train_dataset, selected_indicies)
+        labels = np.array(labels)[selected_indicies]
+
+    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=42)
 
     set_range = np.array(list(range(len(labels))))
     in_set_probs = torch.zeros([len(train_dataset)])
@@ -81,10 +86,13 @@ def main():
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
+    parser = argparse.ArgumentParser(description='Evaluate and average memorisation scores')
+    parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
     parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
+    parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     args = parser.parse_args()
+    assert 0.0 < args.dataset_size <= 1.0, 'dataset_size should be fraction in (0.0, 1.0] interval'
     return args
 
 

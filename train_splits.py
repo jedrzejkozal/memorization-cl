@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR100
 from tqdm import tqdm
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
 from backbones.resnet import resnet18
@@ -38,26 +38,27 @@ def main():
     else:
         labels = train_dataset.targets
 
-    n_folds = 10
-    skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
-    fold_idx = args.fold_idx
+    if args.dataset_size != 1.0:
+        dataset_indicies = list(range(len(labels)))
+        _, selected_indicies = train_test_split(dataset_indicies, test_size=args.dataset_size, random_state=42, stratify=labels)
+        train_dataset = Subset(train_dataset, selected_indicies)
+        labels = np.array(labels)[selected_indicies]
 
-    for i, (train_idx, val_idx) in enumerate(skf.split(np.array(list(range(len(labels)))), labels)):
-        if i == fold_idx:
-            subset_indcies = train_idx
-            break
-
-    train_subset = Subset(train_dataset, subset_indcies)
-    for reapeat_num in range(args.n_repeats):
-        train(train_subset, fold_idx, reapeat_num)
+    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=42)
+    for fold_idx, (train_idx, val_idx) in enumerate(skf.split(np.array(list(range(len(labels)))), labels)):
+        train_subset = Subset(train_dataset, train_idx)
+        for reapeat_num in range(args.n_repeats):
+            train(train_subset, fold_idx, reapeat_num)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
-    parser.add_argument('--fold_idx', type=int, required=True, help='Fold index for cross-validation')
+    parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
     parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
+    parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     args = parser.parse_args()
+    assert 0.0 < args.dataset_size <= 1.0, 'dataset_size should be fraction in (0.0, 1.0] interval'
     return args
 
 
