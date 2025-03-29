@@ -5,7 +5,7 @@ import argparse
 
 import torch.utils
 import torch.utils.data
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR100
 from tqdm import tqdm
@@ -26,7 +26,17 @@ def main():
                              (0.2675, 0.2565, 0.2761)),
     ])
     train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=train_transform)
-    labels = train_dataset.targets
+    if args.class_range:
+        range_begin, range_end = args.class_range.split(',')
+        range_begin, range_end = int(range_begin), int(range_end)
+
+        labels = np.array(train_dataset.targets)
+        mask = np.logical_and(labels >= range_begin, labels < range_end)
+        indicies = np.argwhere(mask).flatten()
+        labels = labels[mask]
+        train_dataset = Subset(train_dataset, indicies)
+    else:
+        labels = train_dataset.targets
 
     n_folds = 10
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
@@ -37,7 +47,7 @@ def main():
             subset_indcies = train_idx
             break
 
-    train_subset = torch.utils.data.Subset(train_dataset, subset_indcies)
+    train_subset = Subset(train_dataset, subset_indcies)
     for reapeat_num in range(args.n_repeats):
         train(train_subset, fold_idx, reapeat_num)
 
@@ -46,6 +56,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
     parser.add_argument('--fold_idx', type=int, required=True, help='Fold index for cross-validation')
     parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
+    parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
     args = parser.parse_args()
     return args
 

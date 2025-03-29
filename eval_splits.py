@@ -4,16 +4,18 @@ import torch.nn as nn
 import argparse
 import numpy as np
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR100
 
 from backbones.resnet import resnet18
 from utils.conf import base_path_dataset as base_path
 from sklearn.model_selection import StratifiedKFold
+from tqdm import tqdm
 
 
 def main():
+    args = parse_args()
     device = 'cuda:0'
     net = resnet18(n_classes=100)
 
@@ -24,7 +26,17 @@ def main():
                              (0.2675, 0.2565, 0.2761)),
     ])
     train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=test_transform)
-    labels = train_dataset.targets
+    if args.class_range:
+        range_begin, range_end = args.class_range.split(',')
+        range_begin, range_end = int(range_begin), int(range_end)
+
+        labels = np.array(train_dataset.targets)
+        mask = np.logical_and(labels >= range_begin, labels < range_end)
+        indicies = np.argwhere(mask).flatten()
+        labels = labels[mask]
+        train_dataset = Subset(train_dataset, indicies)
+    else:
+        labels = train_dataset.targets
 
     n_folds = 10
     skf = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)
@@ -35,13 +47,13 @@ def main():
     in_counts = torch.zeros([len(train_dataset)])
     out_counts = torch.zeros([len(train_dataset)])
 
-    for fold_idx, (train_idx, val_idx) in enumerate(skf.split(set_range, labels)):
-        train_subset = torch.utils.data.Subset(train_dataset, train_idx)
+    for fold_idx, (train_idx, val_idx) in tqdm(enumerate(skf.split(set_range, labels))):
+        train_subset = Subset(train_dataset, train_idx)
         train_loader = DataLoader(train_subset, batch_size=32, shuffle=False, num_workers=16)
-        val_subset = torch.utils.data.Subset(train_dataset, val_idx)
+        val_subset = Subset(train_dataset, val_idx)
         val_loader = DataLoader(val_subset, batch_size=32, shuffle=False, num_workers=10)
 
-        for repeat_num in range(5):
+        for repeat_num in range(args.n_repeats):
             net.load_state_dict(torch.load(f'resnet_cifar100_fold_{fold_idx}_{repeat_num}.pth'))
             net.to(device)
             net.eval()
@@ -66,6 +78,14 @@ def main():
     print(memorisation_scores)
 
     np.save('memorsation_scores.npy', memorisation_scores.numpy())
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
+    parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
+    parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
+    args = parser.parse_args()
+    return args
 
 
 def eval(loader, net, device):
