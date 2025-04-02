@@ -1,3 +1,4 @@
+import pathlib
 import torch
 import torch.nn as nn
 import numpy as np
@@ -7,12 +8,12 @@ import torch.utils
 import torch.utils.data
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
-from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR100, CIFAR10
 from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
-from backbones.resnet import resnet18
+from backbones.resnet import resnet18, resnet50
 from utils.conf import base_path_dataset as base_path
 
 
@@ -25,7 +26,11 @@ def main():
         transforms.Normalize((0.5071, 0.4867, 0.4408),
                              (0.2675, 0.2565, 0.2761)),
     ])
-    train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=train_transform)
+    if args.dataset_name == 'cifar100':
+        train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, download=True, transform=train_transform)
+    elif args.dataset_name == 'cifar10':
+        train_dataset = CIFAR10(root=base_path() + 'CIFAR10', train=True, download=True, transform=train_transform)
+
     if args.class_range:
         range_begin, range_end = args.class_range.split(',')
         range_begin, range_end = int(range_begin), int(range_end)
@@ -45,14 +50,19 @@ def main():
         labels = np.array(labels)[selected_indicies]
 
     skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=42)
-    for fold_idx, (train_idx, val_idx) in enumerate(skf.split(np.array(list(range(len(labels)))), labels)):
+    for fold_idx, (train_idx, _) in enumerate(skf.split(np.array(list(range(len(labels)))), labels)):
         train_subset = Subset(train_dataset, train_idx)
-        for reapeat_num in range(args.n_repeats):
-            train(train_subset, fold_idx, reapeat_num)
+        for repeat_idx in range(args.n_repeats):
+            net = train(train_subset, args.model_name)
+            torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_fold_{fold_idx}_{repeat_idx}.pth')
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
+    parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True, help='dataset used for training')
+    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet50'], default='resnet18', help='what model should be used')
+    parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
+
     parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
     parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
@@ -62,12 +72,17 @@ def parse_args():
     return args
 
 
-def train(train_subset, fold_idx, repeat_idx):
+def train(train_subset, model_name='resnet18'):
     n_epochs = 50
     batch_size = 32
     device = 'cuda:0'
 
-    net = resnet18(n_classes=100)
+    if model_name == 'resnet18':
+        net = resnet18(n_classes=100)
+    elif model_name == 'resnet50':
+        net = resnet50(n_classes=100)
+    else:
+        raise ValueError("Invalid model_name")
     net.to(device)
 
     train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=16)
@@ -92,22 +107,7 @@ def train(train_subset, fold_idx, repeat_idx):
 
         scheduler.step()
 
-    torch.save(net.state_dict(), f'resnet_cifar100_fold_{fold_idx}_{repeat_idx}.pth')
-
-
-def compute_acc(model, dataloader, device):
-    model.eval()
-    correct, total = 0.0, 0.0
-    with torch.no_grad():
-        for inputs, labels in dataloader:
-            inputs, labels = inputs.to(device), labels.to(device)
-            outputs = model(inputs)
-            _, pred = torch.max(outputs.data, 1)
-            correct += torch.sum(pred == labels).item()
-            total += labels.shape[0]
-
-    acc = correct / total * 100
-    return acc
+    return net
 
 
 if __name__ == '__main__':

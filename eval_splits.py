@@ -1,3 +1,4 @@
+import pathlib
 import torch
 import torch.utils.data
 import torch.nn as nn
@@ -6,9 +7,9 @@ import numpy as np
 
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
-from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR100, CIFAR10
 
-from backbones.resnet import resnet18
+from backbones.resnet import resnet18, resnet50
 from utils.conf import base_path_dataset as base_path
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tqdm import tqdm
@@ -17,7 +18,12 @@ from tqdm import tqdm
 def main():
     args = parse_args()
     device = 'cuda:0'
-    net = resnet18(n_classes=100)
+    if args.model_name == 'resnet18':
+        net = resnet18(n_classes=100)
+    elif args.model_name == 'resnet50':
+        net = resnet50(n_classes=100)
+    else:
+        raise ValueError("Invalid model_name")
 
     # get original probs
     test_transform = transforms.Compose([
@@ -25,7 +31,11 @@ def main():
         transforms.Normalize((0.5071, 0.4867, 0.4408),
                              (0.2675, 0.2565, 0.2761)),
     ])
-    train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=test_transform)
+    if args.dataset_name == 'cifar100':
+        train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=test_transform)
+    elif args.dataset_name == 'cifar10':
+        train_dataset = CIFAR10(root=base_path() + 'CIFAR10', train=True, transform=test_transform)
+
     if args.class_range:
         range_begin, range_end = args.class_range.split(',')
         range_begin, range_end = int(range_begin), int(range_end)
@@ -52,14 +62,14 @@ def main():
     in_counts = torch.zeros([len(train_dataset)])
     out_counts = torch.zeros([len(train_dataset)])
 
-    for fold_idx, (train_idx, val_idx) in tqdm(enumerate(skf.split(set_range, labels))):
+    for fold_idx, (train_idx, val_idx) in tqdm(enumerate(skf.split(set_range, labels)), total=args.n_folds):
         train_subset = Subset(train_dataset, train_idx)
         train_loader = DataLoader(train_subset, batch_size=32, shuffle=False, num_workers=16)
         val_subset = Subset(train_dataset, val_idx)
         val_loader = DataLoader(val_subset, batch_size=32, shuffle=False, num_workers=10)
 
         for repeat_num in range(args.n_repeats):
-            net.load_state_dict(torch.load(f'resnet_cifar100_fold_{fold_idx}_{repeat_num}.pth'))
+            net.load_state_dict(torch.load(args.weights_dir / f'resnet_cifar100_fold_{fold_idx}_{repeat_num}.pth'))
             net.to(device)
             net.eval()
             in_probs = eval(train_loader, net, device)
@@ -82,11 +92,16 @@ def main():
     print('memorisation_scores:')
     print(memorisation_scores)
 
-    np.save('memorsation_scores.npy', memorisation_scores.numpy())
+    np.save(args.out_filename, memorisation_scores.numpy())
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate and average memorisation scores')
+    parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True)
+    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet50'], default='resnet18', help='what model should be used')
+    parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
+    parser.add_argument('--out_filename', type=str, default='memorsation_scores.npy', help='name of the .npy file that will be saved')
+
     parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
     parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
