@@ -163,6 +163,18 @@ def resnet18(n_classes: int, width: int = 1, pretrained: bool = False, **kwargs)
     return ResNet(BasicBlock, [2, 2, 2, 2], n_classes, nf, **kwargs)
 
 
+def resnet34(n_classes: int, width: int = 1, pretrained: bool = False, **kwargs) -> ResNet:
+    width_per_group = int(64 * width)
+    if pretrained:
+        weights = torchvision.models.resnet.ResNet34_Weights.DEFAULT
+        model = torchvision.models.resnet.resnet34(num_classes=1000, weights=weights, width_per_group=width_per_group, **kwargs)
+        model.classifier[1] = nn.Linear(model.last_channel, n_classes)
+    else:
+        model = torchvision.models.resnet.resnet34(num_classes=n_classes, weights=None, width_per_group=width_per_group, **kwargs)
+
+    return model
+
+
 def resnet50(n_classes: int, width: int = 1, pretrained: bool = False, **kwargs) -> ResNet:
     width_per_group = int(64 * width)
     if pretrained:
@@ -175,5 +187,17 @@ def resnet50(n_classes: int, width: int = 1, pretrained: bool = False, **kwargs)
     return model
 
 
+def resnet101(n_classes: int, width: int = 1, pretrained: bool = False, **kwargs) -> ResNet:
+    width_per_group = int(64 * width)
+    if pretrained:
+        weights = torchvision.models.resnet.ResNet101_Weights.DEFAULT
+        model = torchvision.models.resnet.resnet101(num_classes=1000, weights=weights, width_per_group=width_per_group, **kwargs)
+        model.classifier[1] = nn.Linear(model.last_channel, n_classes)
+    else:
+        model = torchvision.models.resnet.resnet101(num_classes=n_classes, weights=None, width_per_group=width_per_group, **kwargs)
+
+    return model
+
+
 def get_all_backbones():
-    return ['resnet18', 'resnet50']
+    return ['resnet18', 'resnet34', 'resnet50', 'resnet101']

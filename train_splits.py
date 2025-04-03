@@ -13,7 +13,7 @@ from tqdm import tqdm
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
 
-from backbones.resnet import resnet18, resnet50
+from backbones.resnet import resnet18, resnet34, resnet50, resnet101
 from utils.conf import base_path_dataset as base_path
 
 
@@ -60,7 +60,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser(description='Train CIFAR100 with ResNet18')
     parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True, help='dataset used for training')
-    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet50'], default='resnet18', help='what model should be used')
+    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101'], default='resnet18', help='what model should be used')
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
 
     parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
@@ -79,8 +79,12 @@ def train(train_subset, model_name='resnet18'):
 
     if model_name == 'resnet18':
         net = resnet18(n_classes=100)
+    elif model_name == 'resnet34':
+        net = resnet34(n_classes=100)
     elif model_name == 'resnet50':
         net = resnet50(n_classes=100)
+    elif model_name == 'resnet101':
+        net = resnet101(n_classes=100)
     else:
         raise ValueError("Invalid model_name")
     net.to(device)
