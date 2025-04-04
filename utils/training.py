@@ -158,19 +158,18 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
             for i, data in enumerate(train_loader):
                 if args.debug and i > 3:
                     break
+                inputs, labels, not_aug_inputs, idxs = data[0], data[1], data[2], data[3]
+                inputs = inputs.to(model.device)
+                labels = labels.to(model.device)
+                not_aug_inputs = not_aug_inputs.to(model.device)
+                model_args = [inputs, labels, not_aug_inputs]
+                if model.NAME == 'maer':
+                    model_args.append(idxs)
                 if hasattr(dataset.train_loader.dataset, 'logits'):
-                    inputs, labels, not_aug_inputs, logits = data
-                    inputs = inputs.to(model.device)
-                    labels = labels.to(model.device)
-                    not_aug_inputs = not_aug_inputs.to(model.device)
+                    logits = data[4]
                     logits = logits.to(model.device)
-                    loss = model.meta_observe(inputs, labels, not_aug_inputs, logits)
-                else:
-                    inputs, labels, not_aug_inputs = data
-                    inputs, labels = inputs.to(model.device), labels.to(
-                        model.device)
-                    not_aug_inputs = not_aug_inputs.to(model.device)
-                    loss = model.meta_observe(inputs, labels, not_aug_inputs)
+                    model_args.append(logits)
+                loss = model.meta_observe(*model_args)
                 assert not math.isnan(loss)
                 progress_bar.prog(i, len(train_loader), epoch, t, loss)
 

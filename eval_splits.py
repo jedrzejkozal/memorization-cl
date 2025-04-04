@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR100, CIFAR10
 
-from backbones.resnet import resnet18, resnet50
+from backbones.resnet import resnet18, resnet34, resnet50, resnet101
 from utils.conf import base_path_dataset as base_path
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tqdm import tqdm
@@ -20,8 +20,12 @@ def main():
     device = 'cuda:0'
     if args.model_name == 'resnet18':
         net = resnet18(n_classes=100)
+    elif args.model_name == 'resnet34':
+        net = resnet34(n_classes=100)
     elif args.model_name == 'resnet50':
         net = resnet50(n_classes=100)
+    elif args.model_name == 'resnet101':
+        net = resnet101(n_classes=100)
     else:
         raise ValueError("Invalid model_name")
 
@@ -98,7 +102,7 @@ def main():
 def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate and average memorisation scores')
     parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True)
-    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet50'], default='resnet18', help='what model should be used')
+    parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101'], default='resnet18', help='what model should be used')
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
     parser.add_argument('--out_filename', type=str, default='memorsation_scores.npy', help='name of the .npy file that will be saved')
 
