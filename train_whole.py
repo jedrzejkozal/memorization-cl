@@ -14,16 +14,19 @@ from utils.conf import base_path_dataset as base_path
 
 
 def main():
+    memorisation_file_path = '../leave-one-out/memorisation.txt'
+
     filename = 'idx_score.npy'
 
     computed_probs = {}
-    with open('memorisation.txt', 'r') as f:
+    with open(memorisation_file_path, 'r') as f:
         for line in f.readlines():
             idx, prob = line.split(':')
             idx, prob = int(idx), float(prob)
             computed_probs[idx] = prob
 
-    idxs = np.load(filename)
+    # idxs = np.load(filename)
+    idxs = np.random.permutation(50000)
     for i in idxs:
         if i in computed_probs:
             continue
@@ -31,7 +34,7 @@ def main():
         y_pred = train(i)
         print(y_pred)
 
-        with open('memorisation.txt', 'a+') as f:
+        with open(memorisation_file_path, 'a+') as f:
             f.write(f'{i}: {y_pred}\n')
 
 

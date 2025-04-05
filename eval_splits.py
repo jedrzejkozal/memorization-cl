@@ -58,33 +58,32 @@ def main():
         train_dataset = Subset(train_dataset, selected_indicies)
         labels = np.array(labels)[selected_indicies]
 
-    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=42)
-
     set_range = np.array(list(range(len(labels))))
     in_set_probs = torch.zeros([len(train_dataset)])
     out_set_probs = torch.zeros([len(train_dataset)])
     in_counts = torch.zeros([len(train_dataset)])
     out_counts = torch.zeros([len(train_dataset)])
 
-    for fold_idx, (train_idx, val_idx) in tqdm(enumerate(skf.split(set_range, labels)), total=args.n_folds):
+    for repeat_idx in tqdm(range(args.n_repeats)):
+        train_idx, val_idx = train_test_split(set_range, test_size=0.5, random_state=repeat_idx, stratify=labels)
+
         train_subset = Subset(train_dataset, train_idx)
         train_loader = DataLoader(train_subset, batch_size=32, shuffle=False, num_workers=16)
         val_subset = Subset(train_dataset, val_idx)
         val_loader = DataLoader(val_subset, batch_size=32, shuffle=False, num_workers=10)
 
-        for repeat_num in range(args.n_repeats):
-            net.load_state_dict(torch.load(args.weights_dir / f'resnet_cifar100_fold_{fold_idx}_{repeat_num}.pth'))
-            net.to(device)
-            net.eval()
-            in_probs = eval(train_loader, net, device)
-            for i, prob in zip(train_idx, in_probs):
-                in_set_probs[i] += prob
-                in_counts[i] += 1
-            out_probs = eval(val_loader, net, device)
-            for i, prob in zip(val_idx, out_probs):
-                out_set_probs[i] += prob
-                out_counts[i] += 1
-            # break
+        net.load_state_dict(torch.load(args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth'))
+        net.to(device)
+        net.eval()
+        in_probs = eval(train_loader, net, device)
+        for i, prob in zip(train_idx, in_probs):
+            in_set_probs[i] += prob
+            in_counts[i] += 1
+        out_probs = eval(val_loader, net, device)
+        for i, prob in zip(val_idx, out_probs):
+            out_set_probs[i] += prob
+            out_counts[i] += 1
+        # break
     print(in_set_probs)
     print(in_counts)
     print(out_set_probs)
@@ -106,8 +105,7 @@ def parse_args():
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
     parser.add_argument('--out_filename', type=str, default='memorsation_scores.npy', help='name of the .npy file that will be saved')
 
-    parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
-    parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
+    parser.add_argument('--n_repeats', type=int, default=250, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
     parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     args = parser.parse_args()

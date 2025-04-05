@@ -49,12 +49,12 @@ def main():
         train_dataset = Subset(train_dataset, selected_indicies)
         labels = np.array(labels)[selected_indicies]
 
-    skf = StratifiedKFold(n_splits=args.n_folds, shuffle=True, random_state=42)
-    for fold_idx, (train_idx, _) in enumerate(skf.split(np.array(list(range(len(labels)))), labels)):
+    for repeat_idx in tqdm(range(args.n_repeats)):
+        dataset_indicies = np.array(list(range(len(labels))))
+        train_idx, _ = train_test_split(dataset_indicies, test_size=0.5, random_state=repeat_idx, stratify=labels)
         train_subset = Subset(train_dataset, train_idx)
-        for repeat_idx in range(args.n_repeats):
-            net = train(train_subset, args.model_name)
-            torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_fold_{fold_idx}_{repeat_idx}.pth')
+        net = train(train_subset, args.model_name)
+        torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth')
 
 
 def parse_args():
@@ -63,8 +63,7 @@ def parse_args():
     parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101'], default='resnet18', help='what model should be used')
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
 
-    parser.add_argument('--n_folds', type=int, default=10, help='Number of folds for cross-validation')
-    parser.add_argument('--n_repeats', type=int, default=5, help='The number of repeats required')
+    parser.add_argument('--n_repeats', type=int, default=250, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
     parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     args = parser.parse_args()
