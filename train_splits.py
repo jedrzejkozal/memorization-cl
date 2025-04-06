@@ -90,7 +90,7 @@ def train(train_subset, model_name='resnet18'):
 
     train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=16)
 
-    opt = torch.optim.SGD(net.parameters(), lr=0.1, weight_decay=0.0, momentum=0.9)
+    opt = torch.optim.SGD(net.parameters(), lr=0.1, weight_decay=1e-6, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(opt, [35, 45], gamma=0.1, verbose=False)
 
     loss_fn = nn.CrossEntropyLoss()
