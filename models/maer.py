@@ -49,15 +49,26 @@ class Maer(ContinualModel):
 
         outputs = self.net(inputs)
 
-        y_pred = outputs.argmax(dim=1)
-        batch_idxs = torch.argwhere(y_pred[:real_batch_size] == labels[:real_batch_size]).flatten()
-        idxs = dataset_indexes[batch_idxs]
-        for i in idxs:
-            i = i.item()
-            if i not in self.trained_order_set:
-                self.trained_order_set.add(i)
-                self.trained_order.append(i)
-                self.trained_iteration.append(self.iteration_counter)
+        with torch.no_grad():
+            y_pred = outputs.argmax(dim=1)
+            batch_idxs = torch.argwhere(y_pred[:real_batch_size] == labels[:real_batch_size]).flatten()
+            idxs = dataset_indexes[batch_idxs]
+            for i in idxs:
+                i = i.item()
+                if i not in self.trained_order_set:
+                    self.trained_order_set.add(i)
+                    self.trained_order.append(i)
+                    self.trained_iteration.append(self.iteration_counter)
+
+            batch_idxs = torch.argwhere(y_pred[:real_batch_size] != labels[:real_batch_size]).flatten()
+            idxs = dataset_indexes[batch_idxs]
+            for i in idxs:
+                i = i.item()
+                if i in self.trained_order_set:
+                    self.trained_order_set.remove(i)
+                    index = self.trained_order.index(i)
+                    self.trained_order.remove(i)
+                    self.trained_iteration.pop(index)
 
         # print(len(self.trained_order))
 
@@ -81,11 +92,17 @@ class Maer(ContinualModel):
         # print('current_task_indexes len = ', len(current_task_indexes))
         # print('buffer len = ', len(self.buffer))
 
-        max_idx = int(0.9 * len(self.trained_order))
-        trained_order = self.trained_order[:max_idx]
-        trained_iteration = self.trained_iteration[:max_idx]
-        selection_prob = np.array(trained_iteration) / np.sum(trained_iteration)
-        selected_samples_idxs = np.random.choice(trained_order, size=len(current_task_indexes), replace=False, p=selection_prob)
+        # max_idx = int(0.9 * len(self.trained_order))
+        # trained_order = self.trained_order[:max_idx]
+        # trained_iteration = self.trained_iteration[:max_idx]
+        # selection_prob = np.array(trained_iteration) / np.sum(trained_iteration)
+        # selected_samples_idxs = np.random.choice(trained_order, size=len(current_task_indexes), replace=False, p=selection_prob)
+
+        half_idx = len(self.trained_order) // 2
+        # print('len(self.trained_order) = ', len(self.trained_order))
+        select_size = len(current_task_indexes) // 2
+        selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
+        # assert len(selected_samples_idxs) == len(current_task_indexes), f'should be equal got {len(selected_samples_idxs)} and {len(current_task_indexes)}'
 
         for buffer_idx, dataset_idx in zip(current_task_indexes, selected_samples_idxs):
             _, label, not_aug_img, _ = train_dataset[dataset_idx]

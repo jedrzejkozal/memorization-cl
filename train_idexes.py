@@ -226,7 +226,7 @@ def train_subset(dataset_size):
 
     # subset_limit = int(data_cutout * len(trained_order))
     # half_idx = len(trained_order) // 2
-    # trained_subset = Subset(train_dataset, trained_order[half_idx-dataset_size:half_idx+dataset_size])
+    # trained_subset = Subset(train_dataset, trained_order[half_idx-dataset_size//2:half_idx+dataset_size//2])
 
     random_indexes = np.random.choice(np.arange(len(train_dataset)), size=dataset_size)
     trained_subset = Subset(train_dataset, random_indexes)

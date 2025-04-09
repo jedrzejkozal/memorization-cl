@@ -14,7 +14,7 @@ from datasets.utils.continual_benchmark import ContinualBenchmark
 from models.utils.continual_model import ContinualModel
 
 from utils.loggers import *
-from utils.mlflow_logger import MLFlowLogger
+# from utils.mlflow_logger import MLFlowLogger
 from utils.status import ProgressBar
 
 
