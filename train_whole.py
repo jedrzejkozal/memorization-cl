@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import numpy as np
@@ -14,6 +15,7 @@ from utils.conf import base_path_dataset as base_path
 
 
 def main():
+    args = parse_args()
     memorisation_file_path = '../leave-one-out/memorisation.txt'
 
     filename = 'idx_score.npy'
@@ -31,17 +33,25 @@ def main():
         if i in computed_probs:
             continue
         print(f'\ncomputing index {i}')
-        y_pred = train(i)
+        y_pred = train(i, args.device)
         print(y_pred)
 
         with open(memorisation_file_path, 'a+') as f:
             f.write(f'{i}: {y_pred}\n')
 
 
-def train(exclude_idx):
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--device', type=str, default='cuda:0')
+
+    args = parser.parse_args()
+    return args
+
+
+def train(exclude_idx, device):
     n_epochs = 50
     batch_size = 32
-    device = 'cuda:0'
 
     net = resnet18(n_classes=100)
     net.to(device)
@@ -59,7 +69,7 @@ def train(exclude_idx):
                              (0.2675, 0.2565, 0.2761)),
     ])
 
-    train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=train_transform)
+    train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=train_transform, download=True)
     subset_indcies = list(range(len(train_dataset)))
     subset_indcies.remove(exclude_idx)
     train_subset = torch.utils.data.Subset(train_dataset, subset_indcies)
