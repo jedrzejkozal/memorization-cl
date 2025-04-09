@@ -10,6 +10,7 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR100, CIFAR10
 
 from backbones.resnet import resnet18, resnet34, resnet50, resnet101
+from train_splits import get_model
 from utils.conf import base_path_dataset as base_path
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tqdm import tqdm
@@ -17,17 +18,7 @@ from tqdm import tqdm
 
 def main():
     args = parse_args()
-    device = 'cuda:0'
-    if args.model_name == 'resnet18':
-        net = resnet18(n_classes=100)
-    elif args.model_name == 'resnet34':
-        net = resnet34(n_classes=100)
-    elif args.model_name == 'resnet50':
-        net = resnet50(n_classes=100)
-    elif args.model_name == 'resnet101':
-        net = resnet101(n_classes=100)
-    else:
-        raise ValueError("Invalid model_name")
+    net = get_model(args.model_name, args.model_width)
 
     # get original probs
     test_transform = transforms.Compose([
@@ -68,18 +59,18 @@ def main():
         train_idx, val_idx = train_test_split(set_range, test_size=0.5, random_state=repeat_idx, stratify=labels)
 
         train_subset = Subset(train_dataset, train_idx)
-        train_loader = DataLoader(train_subset, batch_size=32, shuffle=False, num_workers=16)
+        train_loader = DataLoader(train_subset, batch_size=32, shuffle=False, num_workers=args.num_workers)
         val_subset = Subset(train_dataset, val_idx)
-        val_loader = DataLoader(val_subset, batch_size=32, shuffle=False, num_workers=10)
+        val_loader = DataLoader(val_subset, batch_size=32, shuffle=False, num_workers=args.num_workers)
 
         net.load_state_dict(torch.load(args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth'))
-        net.to(device)
+        net.to(args.device)
         net.eval()
-        in_probs = eval(train_loader, net, device)
+        in_probs = eval(train_loader, net, args.device)
         for i, prob in zip(train_idx, in_probs):
             in_set_probs[i] += prob
             in_counts[i] += 1
-        out_probs = eval(val_loader, net, device)
+        out_probs = eval(val_loader, net, args.device)
         for i, prob in zip(val_idx, out_probs):
             out_set_probs[i] += prob
             out_counts[i] += 1
@@ -102,12 +93,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate and average memorisation scores')
     parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True)
     parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101'], default='resnet18', help='what model should be used')
+    parser.add_argument('--model_width', type=float, default=1.0, help='width multiplier of model')
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
     parser.add_argument('--out_filename', type=str, default='memorsation_scores.npy', help='name of the .npy file that will be saved')
 
     parser.add_argument('--n_repeats', type=int, default=250, help='The number of repeats required')
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
     parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
+    parser.add_argument('--device', type=str, default='cuda:0', help='device used for training')
+    parser.add_argument('--num_workers', type=int, default=10, help='number of workers used in dataloader')
     args = parser.parse_args()
     assert 0.0 < args.dataset_size <= 1.0, 'dataset_size should be fraction in (0.0, 1.0] interval'
     return args

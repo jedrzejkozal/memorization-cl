@@ -53,7 +53,7 @@ def main():
         dataset_indicies = np.array(list(range(len(labels))))
         train_idx, _ = train_test_split(dataset_indicies, test_size=0.5, random_state=repeat_idx, stratify=labels)
         train_subset = Subset(train_dataset, train_idx)
-        net = train(train_subset, args.model_name, args.model_width, args.device)
+        net = train(train_subset, args.model_name, args.model_width, args.device, args.num_workers)
         torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth')
 
 
@@ -68,28 +68,20 @@ def parse_args():
     parser.add_argument('--class_range', type=str, default=None, help='class range used for training')
     parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     parser.add_argument('--device', type=str, default='cuda:0', help='device used for training')
+    parser.add_argument('--num_workers', type=int, default=10, help='number of workers used in dataloader')
     args = parser.parse_args()
     assert 0.0 < args.dataset_size <= 1.0, 'dataset_size should be fraction in (0.0, 1.0] interval'
     return args
 
 
-def train(train_subset, model_name='resnet18', model_width=1.0, device='cuda:0'):
+def train(train_subset, model_name='resnet18', model_width=1.0, device='cuda:0', num_workers=10):
     n_epochs = 50
     batch_size = 32
 
-    if model_name == 'resnet18':
-        net = resnet18(n_classes=100, width=model_width)
-    elif model_name == 'resnet34':
-        net = resnet34(n_classes=100, width=model_width)
-    elif model_name == 'resnet50':
-        net = resnet50(n_classes=100, width=model_width)
-    elif model_name == 'resnet101':
-        net = resnet101(n_classes=100, width=model_width)
-    else:
-        raise ValueError("Invalid model_name")
+    net = get_model(model_name, model_width)
     net.to(device)
 
-    train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=16)
+    train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
 
     opt = torch.optim.SGD(net.parameters(), lr=0.1, weight_decay=1e-6, momentum=0.9)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(opt, [35, 45], gamma=0.1, verbose=False)
@@ -111,6 +103,20 @@ def train(train_subset, model_name='resnet18', model_width=1.0, device='cuda:0')
 
         scheduler.step()
 
+    return net
+
+
+def get_model(model_name, model_width):
+    if model_name == 'resnet18':
+        net = resnet18(n_classes=100, width=model_width)
+    elif model_name == 'resnet34':
+        net = resnet34(n_classes=100, width=model_width)
+    elif model_name == 'resnet50':
+        net = resnet50(n_classes=100, width=model_width)
+    elif model_name == 'resnet101':
+        net = resnet101(n_classes=100, width=model_width)
+    else:
+        raise ValueError("Invalid model_name")
     return net
 
 
