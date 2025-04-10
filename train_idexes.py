@@ -225,12 +225,25 @@ def train_subset(dataset_size):
         trained_iter[i] = iter
 
     # subset_limit = int(data_cutout * len(trained_order))
+
+    # select middle
     # half_idx = len(trained_order) // 2
     # trained_subset = Subset(train_dataset, trained_order[half_idx-dataset_size//2:half_idx+dataset_size//2])
 
-    random_indexes = np.random.choice(np.arange(len(train_dataset)), size=dataset_size)
-    trained_subset = Subset(train_dataset, random_indexes)
+    # select lowest and highest
+    # subset_indexes = np.concatenate([trained_order[int(0.1*len(trained_order)):][:dataset_size // 2], trained_order[:int(0.8*len(trained_order))][-dataset_size // 2:]])
+    # trained_subset = Subset(train_dataset, subset_indexes)
+
+    # select lowest and middle
+    subset_indexes = np.concatenate([trained_order[int(0.1*len(trained_order)):][:dataset_size // 2], trained_order[:int(0.6*len(trained_order))][-dataset_size // 2:]])
+    trained_subset = Subset(train_dataset, subset_indexes)
+
+    # select random
+    # random_indexes = np.random.choice(np.arange(len(train_dataset)), size=dataset_size)
+    # trained_subset = Subset(train_dataset, random_indexes)
+
     print('subset size = ', len(trained_subset))
+    assert len(trained_subset) == dataset_size
     train_loader = DataLoader(trained_subset, batch_size=batch_size, shuffle=True, num_workers=16)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=16)
 
