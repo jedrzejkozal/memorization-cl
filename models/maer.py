@@ -98,10 +98,14 @@ class Maer(ContinualModel):
         # selection_prob = np.array(trained_iteration) / np.sum(trained_iteration)
         # selected_samples_idxs = np.random.choice(trained_order, size=len(current_task_indexes), replace=False, p=selection_prob)
 
-        half_idx = len(self.trained_order) // 2
-        # print('len(self.trained_order) = ', len(self.trained_order))
-        select_size = len(current_task_indexes) // 2
-        selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
+        # half_idx = len(self.trained_order) // 2
+        # # print('len(self.trained_order) = ', len(self.trained_order))
+        # select_size = len(current_task_indexes) // 2
+        # selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
+
+        # selected_samples_idxs = self.trained_order[int(0.1*len(self.trained_order)):][:len(current_task_indexes)]
+        selected_samples_idxs = self.trained_order[:len(current_task_indexes)]
+
         # assert len(selected_samples_idxs) == len(current_task_indexes), f'should be equal got {len(selected_samples_idxs)} and {len(current_task_indexes)}'
 
         for buffer_idx, dataset_idx in zip(current_task_indexes, selected_samples_idxs):
