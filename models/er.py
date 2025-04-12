@@ -8,6 +8,7 @@ import torch
 from models.utils.continual_model import ContinualModel
 from utils.args import add_management_args, add_experiment_args, add_rehearsal_args, ArgumentParser
 from utils.buffer import Buffer
+from utils.buffer_full import FullBuffer
 
 
 def get_parser() -> ArgumentParser:
@@ -25,7 +26,8 @@ class Er(ContinualModel):
 
     def __init__(self, backbone, loss, args, transform):
         super(Er, self).__init__(backbone, loss, args, transform)
-        self.buffer = Buffer(self.args.buffer_size, self.device)
+        # self.buffer = Buffer(self.args.buffer_size, self.device)
+        self.buffer = FullBuffer(self.args.buffer_size, self.device)
 
     def observe(self, inputs, labels, not_aug_inputs):
 

@@ -14,6 +14,7 @@ from datasets.utils.continual_benchmark import ContinualBenchmark
 from models.utils.continual_model import ContinualModel
 
 from utils.loggers import *
+from utils.buffer_full import FullBuffer
 # from utils.mlflow_logger import MLFlowLogger
 from utils.status import ProgressBar
 
@@ -179,6 +180,9 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
                         s.step()
                 else:
                     scheduler.step()
+
+        if hasattr(model, 'buffer') and type(model.buffer) == FullBuffer:
+            model.buffer.update_buffer(dataset, model.net, args.minibatch_size, n_epochs)
 
         if hasattr(model, 'end_task'):
             model.end_task(dataset)
