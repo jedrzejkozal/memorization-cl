@@ -290,12 +290,6 @@ class FullBuffer:
                     i = np.random.choice(len(class_idx[k]), size=1, p=p_k).item()
                     class_distances[k][i] += max_dist
 
-                    # progress = len(self.sample_order) / policy_size
-                    # mu = len(class_distances[k]) * progress
-                    # ii = np.random.normal(mu, 1, size=1).round().item()
-                    # ii = max(0, min(int(ii), len(class_distances[k])-1))
-                    # i = class_sorted_idx[k][ii]
-
                     selected_idx = class_idx[k][i]
                     self.sample_order.append(selected_idx)
             # print(self.sample_order)
@@ -332,12 +326,6 @@ class FullBuffer:
             self.sample_order = []
             while len(self.sample_order) < policy_size:
                 for k in class_set:
-                    # p_k = 1.0 / (class_distances[k] + 1e-7)
-                    # p_k = p_k / p_k.sum()
-                    # assert np.isclose(p_k.sum(), 1.0)
-                    # i = np.random.choice(len(class_idx[k]), size=1, p=p_k).item()
-                    # class_distances[k][i] += max_dist
-
                     progress = len(self.sample_order) / policy_size
                     mu = len(class_distances[k]) * progress
                     ii = np.random.normal(mu, 1, size=1).round().item()

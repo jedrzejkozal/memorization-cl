@@ -16,6 +16,8 @@ def get_parser() -> ArgumentParser:
     add_management_args(parser)
     add_experiment_args(parser)
     add_rehearsal_args(parser)
+    parser.add_argument('--buffer_policy', choices=['min', 'max', 'middle', '0.1min', '0.9max', 'randomized'], required=True, help='how to choose what to put into buffer')
+    parser.add_argument('--use_original_memscores', action='store_true', help='load precomputed CIFAR100 memscores and use them for buffer selection')
     return parser
 
 
@@ -92,23 +94,49 @@ class Maer(ContinualModel):
         # print('current_task_indexes len = ', len(current_task_indexes))
         # print('buffer len = ', len(self.buffer))
 
-        # max_idx = int(0.9 * len(self.trained_order))
-        # trained_order = self.trained_order[:max_idx]
-        # trained_iteration = self.trained_iteration[:max_idx]
-        # selection_prob = np.array(trained_iteration) / np.sum(trained_iteration)
-        # selected_samples_idxs = np.random.choice(trained_order, size=len(current_task_indexes), replace=False, p=selection_prob)
+        if self.args.buffer_policy == 'max':
+            selected_samples_idxs = self.trained_order[-len(current_task_indexes):]
+        elif self.args.buffer_policy == 'middle':
+            half_idx = len(self.trained_order) // 2
+            select_size = len(current_task_indexes) // 2
+            selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
+        elif self.args.buffer_policy == 'min':
+            selected_samples_idxs = self.trained_order[:len(current_task_indexes)]
+        elif self.args.buffer_policy == '0.1min':
+            selected_samples_idxs = self.trained_order[int(0.1*len(self.trained_order)):][:len(current_task_indexes)]
+        elif self.args.buffer_policy == '0.9max':
+            selected_samples_idxs = self.trained_order[:int(0.9*len(self.trained_order))][-len(current_task_indexes):]
+        elif self.args.buffer_policy == 'randomized':
+            max_idx = int(0.9 * len(self.trained_order))  # remove max indicies, as they are probably wrong labels
+            trained_order = self.trained_order[:max_idx]
+            trained_iteration = self.trained_iteration[:max_idx]
+            selection_prob = np.array(trained_iteration) / np.sum(trained_iteration)
+            selected_samples_idxs = np.random.choice(trained_order, size=len(current_task_indexes), replace=False, p=selection_prob)
 
-        # half_idx = len(self.trained_order) // 2
-        # # print('len(self.trained_order) = ', len(self.trained_order))
-        # select_size = len(current_task_indexes) // 2
-        # selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
-
-        # selected_samples_idxs = self.trained_order[int(0.1*len(self.trained_order)):][:len(current_task_indexes)]
-        selected_samples_idxs = self.trained_order[:len(current_task_indexes)]
+        if self.args.use_original_memscores:
+            mem_scores = np.load('datasets/memorsation_scores_cifar100.npy')
+            all_labels = np.load('datasets/labels_cifar100.npy')
+            train_mask = np.logical_and(all_labels >= dataset.i, all_labels < dataset.i + dataset.N_CLASSES_PER_TASK)
+            arg_idx = np.argsort(mem_scores[train_mask])
+            if self.args.buffer_policy == '0.1min':
+                selected_samples_idxs = arg_idx[int(0.1*len(arg_idx)):][:len(current_task_indexes)]
+            elif self.args.buffer_policy == 'min':
+                selected_samples_idxs = arg_idx[:len(current_task_indexes)]
+            elif self.args.buffer_policy == 'max':
+                selected_samples_idxs = arg_idx[-len(current_task_indexes):]
+            elif self.args.buffer_policy == 'middle':
+                half_idx = len(arg_idx) // 2
+                select_size = len(current_task_indexes) // 2
+                selected_samples_idxs = arg_idx[half_idx-select_size:half_idx+select_size]
 
         # assert len(selected_samples_idxs) == len(current_task_indexes), f'should be equal got {len(selected_samples_idxs)} and {len(current_task_indexes)}'
 
+        added_labels = []
         for buffer_idx, dataset_idx in zip(current_task_indexes, selected_samples_idxs):
             _, label, not_aug_img, _ = train_dataset[dataset_idx]
             self.buffer.examples[buffer_idx] = not_aug_img
             self.buffer.labels[buffer_idx] = label
+            added_labels.append(label.item())
+
+        print('labels added to the buffer')
+        print(np.unique(added_labels, return_counts=True))
