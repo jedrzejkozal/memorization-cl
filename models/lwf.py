@@ -54,7 +54,7 @@ class Lwf(ContinualModel):
             opt = SGD(self.net.classifier.parameters(), lr=self.args.lr)
             for epoch in range(self.args.n_epochs):
                 for i, data in enumerate(dataset.train_loader):
-                    inputs, labels, not_aug_inputs = data
+                    inputs, labels, not_aug_inputs = data[:3]
                     inputs, labels = inputs.to(self.device), labels.to(self.device)
                     opt.zero_grad()
                     with torch.no_grad():
@@ -86,10 +86,27 @@ class Lwf(ContinualModel):
         loss = self.loss(outputs[:, mask], labels)
         if logits is not None:
             mask = self.eye[(self.current_task - 1) * self.cpt - 1]
-            loss += self.args.alpha * modified_kl_div(smooth(self.soft(logits[:, mask]).to(self.device), 2, 1),
-                                                      smooth(self.soft(outputs[:, mask]), 2, 1))
+            loss = (1-self.args.alpha)*loss + self.args.alpha * modified_kl_div(smooth(self.soft(logits[:, mask]).to(self.device), 2, 1),
+                                                                                smooth(self.soft(outputs[:, mask]), 2, 1))
+            # loss += self.args.alpha * modified_kl_div(smooth(self.soft(logits[:, mask]).to(self.device), 2, 1),
+            #                                           smooth(self.soft(outputs[:, mask]), 2, 1))
 
         loss.backward()
         self.opt.step()
 
         return loss.item()
+
+    def get_scheduler(self):
+        if self.current_task > 1:
+            self.opt = torch.optim.SGD(self.net.parameters(), lr=self.args.lr, weight_decay=self.args.optim_wd, momentum=self.args.optim_mom)
+        else:
+            # train strong classifier on the first task
+            self.opt = torch.optim.SGD(self.net.parameters(), lr=0.1, weight_decay=self.args.optim_wd, momentum=self.args.optim_mom)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer=self.opt, milestones=[35, 45], gamma=0.1, verbose=False)
+        return scheduler
+
+    def get_epochs(self):
+        if self.current_task > 1:
+            return self.args.n_epochs
+        else:
+            return 50

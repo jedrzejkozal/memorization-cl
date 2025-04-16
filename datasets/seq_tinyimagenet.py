@@ -109,9 +109,9 @@ class TrainTinyImagenet(TestTinyImagenet):
             target = self.target_transform(target)
 
         if hasattr(self, 'logits'):
-            return img, target, not_aug_img, self.logits[index]
+            return img, target, not_aug_img, index, self.logits[index]
 
-        return img, target, not_aug_img
+        return img, target, not_aug_img, index
 
 
 class SequentialTinyImagenet(ContinualBenchmark):

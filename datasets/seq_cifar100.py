@@ -64,7 +64,7 @@ class TrainCIFAR100(CIFAR100):
             target = self.target_transform(target)
 
         if hasattr(self, 'logits'):
-            return img, target, not_aug_img, self.logits[index]
+            return img, target, not_aug_img, index, self.logits[index]
 
         return img, target, not_aug_img, index
 

@@ -181,6 +181,9 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
                 else:
                     scheduler.step()
 
+            if hasattr(model, 'end_epoch'):
+                model.end_epoch(dataset, epoch)
+
         if hasattr(model, 'buffer') and type(model.buffer) == FullBuffer:
             model.buffer.update_buffer(dataset, model.net, args.minibatch_size, n_epochs)
 
