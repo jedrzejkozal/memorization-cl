@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/032d358877c44402a5b9f00bf697a929/artifacts
+end_time: 1744810732150
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 032d358877c44402a5b9f00bf697a929
+run_name: test er
+run_uuid: 032d358877c44402a5b9f00bf697a929
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744810470266
+status: 3
+tags: []
+user_id: jedrzejkozal

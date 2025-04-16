@@ -15,7 +15,7 @@ from models.utils.continual_model import ContinualModel
 
 from utils.loggers import *
 from utils.buffer_full import FullBuffer
-# from utils.mlflow_logger import MLFlowLogger
+from utils.mlflow_logger import MLFlowLogger
 from utils.status import ProgressBar
 
 
@@ -62,7 +62,7 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
         accs_str += '{:.2f}, '.format(a)
     accs_str = accs_str[:-2]
     print(accs_str)
-    return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes
+    return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
 
 
 def compute_acc(model, dataset, k, dataloader, debug=False):
@@ -119,7 +119,7 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
     model.net.to(model.device)
     results, results_mask_classes = [], []
 
-    args.disable_log = True  # TODO remove it
+    # args.disable_log = True  # TODO remove it
     if not args.disable_log and not args.debug:
         logger = MLFlowLogger(dataset.SETTING, dataset.NAME, model.NAME,
                               experiment_name=args.experiment_name, parent_run_id=args.parent_run_id, run_name=args.run_name)
@@ -187,11 +187,11 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
         if hasattr(model, 'end_task'):
             model.end_task(dataset)
 
-        accs = evaluate(model, dataset, debug=args.debug)
+        accs = evaluate(model, dataset, debug=args.debug)  # train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
         results.append(accs[2])
         results_mask_classes.append(accs[3])
 
-        mean_acc = np.mean(accs[2:], axis=1)
+        mean_acc = np.mean(accs[2:4], axis=1)
         print_mean_accuracy(mean_acc, t + 1, dataset.SETTING)
 
         if not args.disable_log and not args.debug:
