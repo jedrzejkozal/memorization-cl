@@ -853,6 +853,25 @@ best_args = {
             500: {'lr': 0.03, 'lr_finetune': 0.01,  'optim_mom': 0.9, 'optim_wd': 0, 'lamda_base': 5, 'k_mr':  2, 'fitting_epochs': 20, 'mr_margin': 0.5, 'lamda_mr': 1.},
             2000: {'lr': 0.03, 'lr_finetune': 0.01,  'optim_mom': 0.9, 'optim_wd': 0, 'lamda_base': 5, 'k_mr':  2, 'fitting_epochs': 20, 'mr_margin': 0.5, 'lamda_mr': 1.},
         },
+        'gss': {200: {'lr': 0.03,
+                      'minibatch_size': 32,
+                      'gss_minibatch_size': 32,
+                      'batch_size': 32,
+                      'n_epochs': 50,
+                      'batch_num': 1},
+                500: {'lr': 0.03,
+                      'minibatch_size': 32,
+                      'gss_minibatch_size': 32,
+                      'batch_size': 32,
+                      'n_epochs': 50,
+                      'batch_num': 1},
+                5120: {'lr': 0.03,
+                       'minibatch_size': 32,
+                       'gss_minibatch_size': 32,
+                       'batch_size': 32,
+                       'n_epochs': 1,
+                       'batch_num': 1}
+                },
 
 
         'icarl': {

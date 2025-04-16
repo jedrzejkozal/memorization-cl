@@ -17,8 +17,8 @@ def get_parser() -> ArgumentParser:
     add_management_args(parser)
     add_experiment_args(parser)
     add_rehearsal_args(parser)
-    parser.add_argument('--buffer_policy', choices=['random', 'grasp', 'grasp_modified', 'memorisation', 'memorisation_modified'], required=True,
-                        help='Penalty weight.')
+    # parser.add_argument('--buffer_policy', choices=['random', 'grasp', 'grasp_modified', 'memorisation', 'memorisation_modified'], required=True,
+    #                     help='Penalty weight.')
     return parser
 
 
@@ -28,8 +28,8 @@ class Er(ContinualModel):
 
     def __init__(self, backbone, loss, args, transform):
         super(Er, self).__init__(backbone, loss, args, transform)
-        # self.buffer = Buffer(self.args.buffer_size, self.device)
-        self.buffer = FullBuffer(self.args.buffer_size, self.device, policy=args.buffer_policy)
+        self.buffer = Buffer(self.args.buffer_size, self.device)
+        # self.buffer = FullBuffer(self.args.buffer_size, self.device, policy=args.buffer_policy)
 
     def observe(self, inputs, labels, not_aug_inputs):
 
