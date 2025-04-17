@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/5899002a35e946f4b6b9be7c4df21385/artifacts
+end_time: 1744843930435
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 5899002a35e946f4b6b9be7c4df21385
+run_name: goldilocks Q=0.1 S=0.1
+run_uuid: 5899002a35e946f4b6b9be7c4df21385
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744839472594
+status: 3
+tags: []
+user_id: jkozal
