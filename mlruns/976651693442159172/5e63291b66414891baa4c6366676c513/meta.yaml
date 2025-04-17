@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/5e63291b66414891baa4c6366676c513/artifacts
+end_time: 1744826362655
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 5e63291b66414891baa4c6366676c513
+run_name: maer min buffer 2000 seed 3
+run_uuid: 5e63291b66414891baa4c6366676c513
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744823517970
+status: 3
+tags: []
+user_id: jedrzejkozal
