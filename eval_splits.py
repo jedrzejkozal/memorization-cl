@@ -14,22 +14,36 @@ from train_splits import get_model
 from utils.conf import base_path_dataset as base_path
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from tqdm import tqdm
+from datasets.seq_tinyimagenet import TestTinyImagenet
 
 
 def main():
     args = parse_args()
-    net = get_model(args.model_name, args.model_width)
 
-    # get original probs
-    test_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5071, 0.4867, 0.4408),
-                             (0.2675, 0.2565, 0.2761)),
-    ])
     if args.dataset_name == 'cifar100':
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5071, 0.4867, 0.4408),
+                                 (0.2675, 0.2565, 0.2761)),
+        ])
         train_dataset = CIFAR100(root=base_path() + 'CIFAR100', train=True, transform=test_transform)
+        n_classes = 100
     elif args.dataset_name == 'cifar10':
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4914, 0.4822, 0.4465),
+                                 (0.2470, 0.2435, 0.2615)),
+        ])
         train_dataset = CIFAR10(root=base_path() + 'CIFAR10', train=True, transform=test_transform)
+        n_classes = 10
+    elif args.dataset_name == 'tinyimagenet':
+        test_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.4802, 0.4480, 0.3975),
+                                 (0.2770, 0.2691, 0.2821)),
+        ])
+        train_dataset = TestTinyImagenet(base_path() + 'TINYIMG', train=True, download=True, transform=test_transform)
+        n_classes = 200
 
     if args.class_range:
         range_begin, range_end = args.class_range.split(',')
@@ -40,6 +54,8 @@ def main():
         indicies = np.argwhere(mask).flatten()
         labels = labels[mask]
         train_dataset = Subset(train_dataset, indicies)
+
+        n_classes = range_end
     else:
         labels = train_dataset.targets
 
@@ -48,6 +64,8 @@ def main():
         _, selected_indicies = train_test_split(dataset_indicies, test_size=args.dataset_size, random_state=42, stratify=labels)
         train_dataset = Subset(train_dataset, selected_indicies)
         labels = np.array(labels)[selected_indicies]
+
+    net = get_model(args.model_name, args.model_width, n_classes)
 
     set_range = np.array(list(range(len(labels))))
     in_set_probs = torch.zeros([len(train_dataset)])
@@ -91,7 +109,7 @@ def main():
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate and average memorisation scores')
-    parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100'], required=True)
+    parser.add_argument('--dataset_name', type=str, choices=['cifar10', 'cifar100', 'tinyimagenet'], required=True)
     parser.add_argument('--model_name', type=str, choices=['resnet18', 'resnet34', 'resnet50', 'resnet101'], default='resnet18', help='what model should be used')
     parser.add_argument('--model_width', type=float, default=1.0, help='width multiplier of model')
     parser.add_argument('--weights_dir', type=pathlib.Path, required=True, help='path where trained weights will be stored')
