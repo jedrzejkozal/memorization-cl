@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/ba69f1a38ea24f06957ce51243dbe4f4/artifacts
+end_time: 1744826372370
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: ba69f1a38ea24f06957ce51243dbe4f4
+run_name: maer middle buffer 2000 seed 3
+run_uuid: ba69f1a38ea24f06957ce51243dbe4f4
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744823503826
+status: 3
+tags: []
+user_id: jedrzejkozal
