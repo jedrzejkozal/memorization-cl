@@ -32,11 +32,12 @@ class Goldilocks(ContinualModel):
     def __init__(self, backbone, loss, args, transform):
         super().__init__(backbone, loss, args, transform)
         self.buffer = Buffer(self.args.buffer_size, self.device)
+        self.t = 0
 
     def begin_task(self, dataset):
-        self.classification_matrix = np.zeros((self.args.n_epochs, dataset.N_CLASSES_PER_TASK))
+        self.classification_matrix = np.zeros((self.args.n_epochs, len(dataset.train_loader.dataset)))
 
-    def observe(self, inputs, labels, not_aug_inputs, dataset_indexes):
+    def observe(self, inputs, labels, not_aug_inputs):
         real_batch_size = inputs.shape[0]
 
         self.opt.zero_grad()
@@ -50,54 +51,54 @@ class Goldilocks(ContinualModel):
         loss.backward()
         self.opt.step()
 
-        self.buffer.add_data(examples=not_aug_inputs, labels=labels[:real_batch_size])
-        self.iteration_counter += 1
+        # self.buffer.add_data(examples=not_aug_inputs, labels=labels[:real_batch_size])
 
         return loss.item()
 
     def end_epoch(self, dataset, epoch):
-        train_dataset = dataset.train_loader.dataset
-        train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+        train_loader = dataset.train_loader
 
         status = self.net.training
         self.net.eval()
         with torch.no_grad():
-            for i, (_, label, not_aug_input) in enumerate(train_loader):
+            for _, label, not_aug_input, dataset_indexes in train_loader:
                 not_aug_input = not_aug_input.to(self.device)
                 label = label.to(self.device)
                 outputs = self.net(not_aug_input)
                 y_pred = outputs.argmax(dim=1)
-                for l, y_p in zip(label, y_pred):
+                for i, l, y_p in zip(dataset_indexes, label, y_pred):
                     if l == y_p:
-                        self.classification_matrix[epoch, i] = 1
+                        self.classification_matrix[epoch, i.item()] = 1
 
         self.net.train(status)
 
     def end_task(self, dataset):
+        self.t += 1
         train_dataset = dataset.train_loader.dataset
 
-        current_task_indexes = []
-        for i, label in enumerate(self.buffer.labels):
-            label = label.item()
-            if label >= dataset.i - dataset.N_CLASSES_PER_TASK and label < dataset.i:
-                current_task_indexes.append(i)
+        buffer_size = len(self.buffer)
+        data_size = self.buffer.buffer_size // self.t
 
-        learning_speed = np.mean(self.classification_matrix, axis=0)
-        max_idx = int(self.args.goldilocks_s * len(train_dataset))
-        learning_speed = learning_speed[:-max_idx]
-        min_idx = int(self.args.goldilocks_q * len(train_dataset))
-        min_idx = max(len(current_task_indexes), min_idx)
-        learning_speed = learning_speed[:min_idx]
+        learning_speed = np.mean(self.classification_matrix, axis=0, keepdims=False)
+        indexes = np.argsort(learning_speed)
+        max_idx = int(self.args.goldilocks_s * len(learning_speed))
+        indexes = indexes[:-max_idx]
+        min_idx = int(self.args.goldilocks_q * len(learning_speed))
+        min_idx = max(data_size, min_idx)
+        indexes = indexes[:min_idx]
 
-        selected_samples_idxs = np.arange(min_idx, min_idx + len(current_task_indexes), 1, dtype=int)
-        if len(learning_speed) > len(current_task_indexes):
-            selected_samples_idxs = np.random.choice(selected_samples_idxs, size=len(current_task_indexes), replace=False)
+        if len(learning_speed) > data_size:
+            indexes = np.random.choice(indexes, size=data_size, replace=False)
 
         added_labels = []
-        for buffer_idx, dataset_idx in zip(current_task_indexes, selected_samples_idxs):
+        for dataset_idx in indexes:
             _, label, not_aug_img, _ = train_dataset[dataset_idx]
-            self.buffer.examples[buffer_idx] = not_aug_img
-            self.buffer.labels[buffer_idx] = label
+            if len(self.buffer) < self.buffer.buffer_size:
+                self.buffer.add_data(examples=torch.unsqueeze(not_aug_img, 0), labels=torch.Tensor([label.item()]))
+            else:
+                buffer_idx = np.random.choice(buffer_size, size=1).item()
+                self.buffer.examples[buffer_idx] = not_aug_img
+                self.buffer.labels[buffer_idx] = label
             added_labels.append(label.item())
 
         print('labels added to the buffer')
