@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/fbdbcecf139d4ff28121c13fb58195a1/artifacts
+end_time: 1744820061201
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: fbdbcecf139d4ff28121c13fb58195a1
+run_name: maer max buffer 2000 seed 0
+run_uuid: fbdbcecf139d4ff28121c13fb58195a1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744815181097
+status: 3
+tags: []
+user_id: jedrzejkozal
