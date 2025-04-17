@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/31db910936054c86ac3b6418ffec7233/artifacts
+end_time: 1744828307203
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 31db910936054c86ac3b6418ffec7233
+run_name: maer max seed 4
+run_uuid: 31db910936054c86ac3b6418ffec7233
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744825527539
+status: 3
+tags: []
+user_id: jedrzejkozal
