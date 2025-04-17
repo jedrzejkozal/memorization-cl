@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/be50ee021bcf4080bf97fad18eb47929/artifacts
+end_time: 1744822816896
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: be50ee021bcf4080bf97fad18eb47929
+run_name: maer seed 2
+run_uuid: be50ee021bcf4080bf97fad18eb47929
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744819983641
+status: 3
+tags: []
+user_id: jedrzejkozal
