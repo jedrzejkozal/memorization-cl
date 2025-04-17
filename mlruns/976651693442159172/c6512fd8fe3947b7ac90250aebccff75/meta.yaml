@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/c6512fd8fe3947b7ac90250aebccff75/artifacts
+end_time: 1744820510578
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: c6512fd8fe3947b7ac90250aebccff75
+run_name: er buffer 2000 seed 1
+run_uuid: c6512fd8fe3947b7ac90250aebccff75
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744817800367
+status: 3
+tags: []
+user_id: jedrzejkozal
