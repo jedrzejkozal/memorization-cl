@@ -27,12 +27,13 @@ class Maer(ContinualModel):
 
     def __init__(self, backbone, loss, args, transform):
         super().__init__(backbone, loss, args, transform)
-        self.buffer = Buffer(self.args.buffer_size, self.device)
+        self.buffer = Buffer(self.args.buffer_size, self.device, mode='balanced_reservoir')
 
         self.iteration_counter = 0
         self.trained_order = []
         self.trained_order_set = set()
         self.trained_iteration = []
+        self.t = 0
 
     def begin_task(self, dataset):
         self.iteration_counter = 0
@@ -84,7 +85,17 @@ class Maer(ContinualModel):
         return loss.item()
 
     def end_task(self, dataset):
+        print()
+        self.t += 1
         train_dataset = dataset.train_loader.dataset
+        dataset_labels = [train_dataset[i][1] for i in self.trained_order]
+
+        data_size = self.buffer.buffer_size // self.t
+        class_data_size = data_size // dataset.N_CLASSES_PER_TASK + 1
+        rest_size = data_size % dataset.N_CLASSES_PER_TASK
+
+        task_classes = np.unique(dataset_labels).tolist()
+        class_trained_order = {label: np.array(self.trained_order)[np.array(dataset_labels) == label] for label in task_classes}
 
         current_task_indexes = []
         for i, label in enumerate(self.buffer.labels):
@@ -95,13 +106,26 @@ class Maer(ContinualModel):
         # print('buffer len = ', len(self.buffer))
 
         if self.args.buffer_policy == 'max':
-            selected_samples_idxs = self.trained_order[-len(current_task_indexes):]
+            selected_samples_idxs = []
+            for i, label in enumerate(task_classes):
+                size = class_data_size if i < rest_size else class_data_size - 1
+                class_idxs = class_trained_order[label][-size:]
+                selected_samples_idxs.extend(class_idxs)
         elif self.args.buffer_policy == 'middle':
-            half_idx = len(self.trained_order) // 2
-            select_size = len(current_task_indexes) // 2
-            selected_samples_idxs = self.trained_order[half_idx-select_size:half_idx+select_size]
+            selected_samples_idxs = []
+            for i, label in enumerate(task_classes):
+                size = class_data_size if i < rest_size else class_data_size - 1
+                class_idxs = class_trained_order[label]
+                half_idx = len(class_idxs) // 2
+                select_size = size // 2
+                class_idxs = class_idxs[half_idx-select_size:half_idx+select_size]
+                selected_samples_idxs.extend(class_idxs)
         elif self.args.buffer_policy == 'min':
-            selected_samples_idxs = self.trained_order[:len(current_task_indexes)]
+            selected_samples_idxs = []
+            for i, label in enumerate(task_classes):
+                size = class_data_size if i < rest_size else class_data_size - 1
+                class_idxs = class_trained_order[label][:size]
+                selected_samples_idxs.extend(class_idxs)
         elif self.args.buffer_policy == '0.1min':
             selected_samples_idxs = self.trained_order[int(0.1*len(self.trained_order)):][:len(current_task_indexes)]
         elif self.args.buffer_policy == '0.9max':
@@ -138,5 +162,9 @@ class Maer(ContinualModel):
             self.buffer.labels[buffer_idx] = label
             added_labels.append(label.item())
 
+        print()
         print('labels added to the buffer')
         print(np.unique(added_labels, return_counts=True))
+        print()
+        print('all labels in the buffer:')
+        print(torch.unique(self.buffer.labels, return_counts=True))

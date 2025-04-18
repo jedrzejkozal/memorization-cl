@@ -21,8 +21,8 @@ def get_parser() -> ArgumentParser:
     return parser
 
 
-class Maer(ContinualModel):
-    NAME = 'maer'
+class MaerBalanced(ContinualModel):
+    NAME = 'maer_balanced'
     COMPATIBILITY = ['class-il', 'domain-il', 'task-il', 'general-continual']
 
     def __init__(self, backbone, loss, args, transform):
