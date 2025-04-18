@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/513b330ed86445f0815234cae199f4bb/artifacts
+end_time: 1745001220919
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 513b330ed86445f0815234cae199f4bb
+run_name: maer middle balanced seed 1 buffer size 2000
+run_uuid: 513b330ed86445f0815234cae199f4bb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744999282342
+status: 3
+tags: []
+user_id: jedrzejkozal

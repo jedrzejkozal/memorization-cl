@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/e848269c57eb46a98cf477f799d6312c/artifacts
+end_time: 1744999600821
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: e848269c57eb46a98cf477f799d6312c
+run_name: gss seed 3
+run_uuid: e848269c57eb46a98cf477f799d6312c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744999600807
+status: 3
+tags: []
+user_id: jedrzejkozal
