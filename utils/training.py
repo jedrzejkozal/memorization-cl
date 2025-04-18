@@ -164,7 +164,7 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
                 labels = labels.to(model.device)
                 not_aug_inputs = not_aug_inputs.to(model.device)
                 model_args = [inputs, labels, not_aug_inputs]
-                if model.NAME == 'maer':
+                if model.NAME.startswith('maer'):
                     model_args.append(idxs)
                 if hasattr(dataset.train_loader.dataset, 'logits'):
                     logits = data[4]

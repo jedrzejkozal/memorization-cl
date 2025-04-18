@@ -121,6 +121,8 @@ def run_experiment(args):
         args.batch_size = dataset.get_batch_size()
     if hasattr(importlib.import_module('models.' + args.model), 'Buffer') and args.minibatch_size is None:
         args.minibatch_size = dataset.get_minibatch_size()
+    if hasattr(importlib.import_module('models.' + args.model), 'BufferMaer') and args.minibatch_size is None:
+        args.minibatch_size = dataset.get_minibatch_size()
 
     if args.backbone is None and hasattr(dataset, 'get_backbone_name'):
         args.backbone = dataset.get_backbone_name()

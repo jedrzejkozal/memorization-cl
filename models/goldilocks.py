@@ -101,5 +101,9 @@ class Goldilocks(ContinualModel):
                 self.buffer.labels[buffer_idx] = label
             added_labels.append(label.item())
 
+        print()
         print('labels added to the buffer')
         print(np.unique(added_labels, return_counts=True))
+        print()
+        print('all labels in the buffer:')
+        print(torch.unique(self.buffer.labels, return_counts=True))
