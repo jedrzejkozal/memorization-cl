@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/919521a8bad34f54a1b893ff7999c77c/artifacts
+end_time: 1745355472566
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 919521a8bad34f54a1b893ff7999c77c
+run_name: maer max balanced seed 4 buffer size 40000
+run_uuid: 919521a8bad34f54a1b893ff7999c77c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1745353088776
+status: 3
+tags: []
+user_id: jedrzejkozal
