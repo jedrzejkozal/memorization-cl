@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/a6c6b6e83f2c47a4985b4140b87164aa/artifacts
+end_time: 1745324578856
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: a6c6b6e83f2c47a4985b4140b87164aa
+run_name: joint seed 2
+run_uuid: a6c6b6e83f2c47a4985b4140b87164aa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1745323008219
+status: 3
+tags: []
+user_id: jkozal
