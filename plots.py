@@ -45,6 +45,19 @@ def main():
             'top-k memscores': ['6dc27dd193eb4db9b96d02846eaf18ae', 'b68989d45ba9406b9a2a8b5a337a0389', 'f83eec22e63b45d197ba842a879537d4', 'b15c13064fe24b2b891e0c19d4027ce2', '0c41f34c20ee4d3a865fcf37a7b8cfc4'],
             'high bottom-k': ['e4d961a2e4f84e70b85a36ab6454c0b4', 'b84f7bf17c274e9e91fdaca768e91d96', 'cddff21ea2dc439b802e02cbaa6ffa54', '0a7230d39cbe4b76b95d2f3481315c6e', 'de8530e093564bfb973aee446c1970a1'],
             'high middle-k': ['6b80582b5b2d4a578244303b69348c9b', '6621e1e4934d4ad6917be58519830138', '2571cfc3c00f481eaf7322c69155cba5', '0687ba965a874767ae30c7a09cfe57dd', '4d2254a446934095a6c150415e50a345'],
+        },
+        30000: {
+            'reservoir balanced': ['7038f66a9c9741e2be8688392042e1aa', 'bbe59f90cee34818bfe03d988d1c6639', '356921d87aa44811b7054ed3583f66f8', '60392b4215da4b6482c95c752ec59a0a', '97a81cc6e2354cdeb50eeae5e8de1139'],
+            'bottom-k memscores': ['aa907596d8f940a1807d03a8b6ee526c', '6ca28dda92f0403ab4e08fbb988edf7e', 'ae0f62ae701542e2b46f690b36efa98e', 'd0dfa16826b24ed4ab8595a0d01b95b4', '307ae84a5aab4624b5bfa1434c22bb60'],
+            'middle-k memsocres': ['02b8c348216b43dc8b763a40fbd7d9f0', '57972e482dce4a4a85ea53ee7cd34778', '398444c04876475a931263b884f01b08', 'e9a40c7e6d714202a50cde3e2632ddb5', '2468b8c468614b61a8f27d5faef3e849'],
+            'top-k memscores': ['46c506bd4da041398fa744331441ae3b', 'b41e6421b61a47319fa80b93638145c8', '0b50e9fcb42f49b4825979b14dc286e1', 'fbf6aac0e68d4352bb489de07bad9952', '64baa531033449299bdf40e6487ded5b'],
+
+        },
+        40000: {
+            'reservoir balanced': ['7c32f0290d3b4af3ba579239e3787c4b', '435bbf64f32b4cfe8fcd5a72610522aa', 'f45a78998666480d944fb6463120de14', '799a64658c2f400e85a4a016c718b8c8', '44351eb1cbb645fe8f069c367a6318c3'],
+            'bottom-k memscores': ['6e7ec05ffc244f59892109809475a10e', 'f1c7fef71ca840d6924343e5c7ef3307', '86e1f4f5ad5a4b989da85c8779303725', 'd753a4758f1f49e5ac8232add61e9b80', 'e549596d2875413ea31983a222ede2c6'],
+            'middle-k memsocres': ['0959975a636041609334a0694e1338e0', '624c58e5b18c4c63b9fd0729ba712f7b', '6102e0a5f6e34b5282f044d6d72f9a6a', '8cf7a9492f5d444795a8c7636beacdbf', '1c42cf0ab2f64381a5cb638c9c4b14b2'],
+            'top-k memscores': ['9faccb39090d4bd48afecf7c0c358223', 'ce9dfcc46ca247d18f43a0e36198037a', '5a4496a049404c57be3ded62ef0db379', '7740fcef6f7c4c2981cd1529b8d1e004', '919521a8bad34f54a1b893ff7999c77c'],
         }
     }
 
@@ -86,7 +99,7 @@ def main():
     for algorithm_name in algorithms:
         accs = results[algorithm_name]
         if len(accs) > 4:
-            accs = accs[1:]
+            accs = accs[1:5]
         # series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
         series_buffer_sizes = [2000, 5000, 10000, 20000]
         plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
