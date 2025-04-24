@@ -12,7 +12,7 @@ def get_parser() -> ArgumentParser:
     add_rehearsal_args(parser)
     # parser.add_argument('--rehersal_policy', choices=['random', 'grasp', 'grasp_modified', 'memorisation', 'memorisation_modified'], required=True,
     #                     help='policy for selecting what samples should be retrived from the buffer')
-    parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir'], default='reservoir', help='policy for selecting samples stored into buffer')
+    parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir'], default='balanced_reservoir', help='policy for selecting samples stored into buffer')
     return parser
 
 
@@ -23,6 +23,10 @@ class Gcr(ContinualModel):
     def __init__(self, backbone, loss, args, transform):
         super().__init__(backbone, loss, args, transform)
         self.buffer = Buffer(self.args.buffer_size, self.device, mode=args.buffer_policy)
+        self.weights = torch.ones(size=[self.args.buffer_size])
+
+    def begin_task(self, dataset):
+        pass
 
     def observe(self, inputs, labels, not_aug_inputs):
         real_batch_size = inputs.shape[0]
@@ -45,174 +49,166 @@ class Gcr(ContinualModel):
         return loss.item()
 
     def end_task(self, dataset):
+        buf_inputs, buf_labels = self.buffer.get_all_data()
+
         train_dataset = dataset.train_loader.dataset
+        dataset_inputs, dataset_labels = [], []
+        for _, labels, not_aug_inputs, _ in train_dataset:
+            dataset_inputs.append(not_aug_inputs)
+            dataset_labels.append(labels)
+        dataset_inputs = torch.stack(dataset_inputs).to(self.args.device)
+        dataset_labels = torch.Tensor(dataset_labels).to(self.args.device).to(buf_labels.dtype)
 
+        inputs = torch.cat([buf_inputs, dataset_inputs], dim=0)
+        labels = torch.cat([buf_labels, dataset_labels], dim=0)
+        self.weights = torch.cat([self.weights, torch.ones(size=[len(train_dataset)])])
 
-def grad_approx(D, Dw, theta, lamb, K, epsilon):
-    """
-    Implements the GradApprox algorithm for selecting a subset of data points
-    that approximates the gradient of the entire dataset.
+        self.opt.zero_grad()
+        (buffer_inputs, buffer_labels), self.weights = self.grad_approx(inputs, labels, self.weights, lamb=0.0001, K=len(buf_inputs))
+        self.opt.zero_grad()
+        self.buffer.examples = buffer_inputs
+        self.buffer.labels = buffer_labels
 
-    Args:
-        D (list of tuples): The dataset, where each tuple contains (xi, yi, zi).
-        Dw (torch.Tensor): Existing weights for each data point in D.
-        theta (torch.nn.Module): The model parameters.
-        lamb (float): Regularization parameter.
-        K (int): Budget for the subset size.
-        epsilon (float): Tolerance for the approximation error.
+    def grad_approx(self, data_inputs, data_labels, Dw, lamb, K, epsilon=1e-6):
+        """
+        Implements the GradApprox algorithm for selecting a subset of data points
+        that approximates the gradient of the entire dataset.
 
-    Returns:
-        tuple: A tuple containing the selected subset X (list of tuples) and
-               the corresponding weights Xw (torch.Tensor).
-    """
+        Args:
+            D (list of tuples): The dataset, where each tuple contains (xi, yi, zi).
+            Dw (torch.Tensor): Existing weights for each data point in D.
+            theta (torch.nn.Module): The model parameters.
+            lamb (float): Regularization parameter.
+            K (int): Budget for the subset size.
+            epsilon (float): Tolerance for the approximation error.
 
-    # 1. Initialize LabelCount(D) - Number of classes.
-    labels = set(yi for _, yi, _ in D)
-    Y = len(labels)
+        Returns:
+            tuple: A tuple containing the selected subset X (list of tuples) and
+                the corresponding weights Xw (torch.Tensor).
+        """
+        # print(len(data_inputs))
+        # print(len(data_labels))
 
-    # 2. Partition dataset D based on labels: D = {Dy}
-    # 3. Partition dataset weights Dw based on the labels of data samples: W = {WDy}
-    Dy_list = []
-    WDy_list = []
-    for y in range(Y):
-        idx_y = [i for i, (_, yi, _) in D if yi == y]
-        Dy = [D[i] for i in idx_y]
-        Dy_list.append(Dy)
+        # 1. Initialize LabelCount(D) - Number of classes.
+        Y = len(torch.unique(data_labels))
 
-        WDy = [Dw[i] for i in idx_y]
-        WDy_list.append(WDy)
+        # 2. Partition dataset D based on labels: D = {Dy}
+        # 3. Partition dataset weights Dw based on the labels of data samples: W = {WDy}
+        Dy_data_list = []
+        Dy_labels_list = []
+        WDy_list = []
+        for y in range(Y):
+            idx_y = [i for i, yi in enumerate(data_labels) if yi == y]
+            Dy_data_list.append([data_inputs[i] for i in idx_y])
+            Dy_labels_list.append([data_labels[i] for i in idx_y])
 
-    # 4. Initialize Replay Buffer and Replay Buffer weights
-    X = []
-    Xw = torch.empty(0)
+            WDy = [Dw[i] for i in idx_y]
+            WDy_list.append(WDy)
 
-    # 5. Iterate over each class
-    for y in range(Y):
-        # 6. Initialize PerClass budget, subset, and weights
-        Dy = Dy_list[y]
-        WDy = WDy_list[y]
-        ky = K // Y  # Integer division to ensure sum(ky) <= K
-        Xy = []
-        Wxy = torch.empty(0)
+        # 4. Initialize Replay Buffer and Replay Buffer weights
+        X_data = []
+        X_labels = []
+        Xw = torch.empty(0)
 
-        # 7. Calculate residuals
-        residuals = calculate_residuals(Dy, WDy, Xy, Wxy, theta, lamb)
+        # 5. Iterate over each class
+        for y in range(Y):
+            # 6. Initialize PerClass budget, subset, and weights
+            Dy_data = Dy_data_list[y]
+            Dy_labels = Dy_labels_list[y]
+            WDy = WDy_list[y]
+            ky = K // Y  # Integer division to ensure sum(ky) <= K
+            Xy_data = []
+            Xy_labels = []
+            Wxy = torch.zeros(size=[ky])
 
-        # 8. While subset size is less than the budget and approximation error is above tolerance
-        while len(Xy) < ky and torch.norm(residuals) >= epsilon:
-            # 9. Find out maximum residual element
-            max_residual_idx = torch.argmax(torch.abs(residuals))
-            e = Dy[max_residual_idx]
+            # 7. Calculate residuals
+            L_sub, residuals = self.calculate_residuals(Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb)
 
-            # 10. Update PerClass subset
-            Xy.append(e)
+            # 8. While subset size is less than the budget and approximation error is above tolerance
+            while len(Xy_data) < ky and torch.norm(L_sub) >= epsilon:
+                # 9. Find out maximum residual element
+                max_residual_idx = torch.argmax(torch.abs(residuals))
+                e_data, e_labels = Dy_data[max_residual_idx], Dy_labels[max_residual_idx]
 
-            # 11. Calculate updated weights
-            Wxy = calculate_updated_weights(Dy, WDy, Xy, Wxy, theta, lamb)
+                # 10. Update PerClass subset
+                Xy_data.append(e_data)
+                Xy_labels.append(e_labels)
 
-            # 12. Calculate residuals
-            residuals = calculate_residuals(Dy, WDy, Xy, Wxy, theta, lamb)
+                # 11. Calculate updated weights
+                Wxy = self.calculate_updated_weights(Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb)
 
-        # 13. Update subset and subset weights
-        X.extend(Xy)
-        if len(Wxy) > 0:  # checking to avoid errors if Wxy is empty.
-            Xw = torch.cat((Xw, Wxy))
+                # 12. Calculate residuals
+                L_sub, residuals = self.calculate_residuals(Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb)
 
-    return X, Xw
+            # 13. Update subset and subset weights
+            X_data.extend(Xy_data)
+            X_labels.extend(Xy_labels)
+            if len(Wxy) > 0:  # checking to avoid errors if Wxy is empty.
+                Xw = torch.cat((Xw, Wxy))
 
+        return X_data, X_labels, Xw
 
-def calculate_residuals(Dy, WDy, Xy, Wxy, theta, lamb):
-    """Calculates the residuals for the GradApprox algorithm."""
-    if not Dy:  # returns an empty tensor if Dy is empty
-        return torch.empty(0)
+    def calculate_residuals(self, Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb):
+        """Calculates the residuals for the GradApprox algorithm."""
+        num_dy = len(Dy_data)
+        L_sub = torch.zeros(num_dy)
+        residuals = torch.zeros(num_dy)
 
-    num_dy = len(Dy)
-    residuals = torch.zeros(num_dy)
+        for i in range(num_dy):
+            total_grad = self.calculate_gradient(Dy_data, Dy_labels, WDy)
+            if len(Xy_data) > 0:
+                subset_grad = self.calculate_gradient(Xy_data, Xy_labels, Wxy)
+            else:
+                subset_grad = torch.zeros_like(total_grad)
 
-    for j in range(num_dy):
-        dj, _, _ = Dy[j]  # get data point xi from data point d = (xi,yi,zi)
+            L_sub[i] = torch.norm(total_grad - subset_grad, p=2) ** 2 + lamb * torch.norm(Wxy, p=2)
+            residuals[i] = 2 * Wxy[i] * torch.norm(subset_grad) ** 2 + 2 * lamb * Wxy[i]
+        return L_sub, residuals
 
-        # convert xi to a tensor (assuming it is a numpy array).
-        # dj = torch.tensor(dj, requires_grad=False).float()
-        total_grad = calculate_gradient(Dy, WDy, theta)
-        subset_grad = calculate_gradient(Xy, Wxy, theta)
+    def calculate_gradient(self, input_data, labels_data, weights):
+        """
+        Calculates the gradient of the replay loss with respect to the model parameters.
 
-        # residuals for data point j.
-        residuals[j] = (torch.norm(WDy[j] * calculate_sample_gradient(dj, theta) - subset_grad))
-    return residuals
+        Args:
+            data (list of tuples): The data points to calculate the gradient for.
+            weights (torch.Tensor): The weights for each data point.
+            theta (torch.nn.Module): The model parameters.
 
+        Returns:
+            torch.Tensor: The gradient of the replay loss.
+        """
+        total_grad = None
+        for i, (xi, yi) in enumerate(zip(input_data, labels_data)):
+            xi = xi.clone().detach().requires_grad_(False)
+            sample_grad = self.calculate_sample_gradient(xi, yi)
+            sample_grad = weights[i] * sample_grad
 
-def calculate_gradient(data, weights, theta):
-    """
-    Calculates the gradient of the replay loss with respect to the model parameters.
+            if total_grad is None:
+                total_grad = sample_grad
+            else:
+                total_grad += sample_grad
 
-    Args:
-        data (list of tuples): The data points to calculate the gradient for.
-        weights (torch.Tensor): The weights for each data point.
-        theta (torch.nn.Module): The model parameters.
+        return total_grad / len(input_data)
 
-    Returns:
-        torch.Tensor: The gradient of the replay loss.
-    """
-    if not data:  # Returns zero gradients if data is empty.
-        return torch.zeros_like(next(theta.parameters()))
+    def calculate_sample_gradient(self, x, y):
+        """Calculates gradient for one sample"""
+        self.net.train()
+        output = self.net(x.unsqueeze(0))
+        loss = self.loss(output, y.unsqueeze(0))
+        loss.backward()
+        grad_flat = torch.cat([param.grad.view(-1) for param in self.net.parameters()])
+        self.net.zero_grad()
+        return grad_flat.detach()
 
-    total_grad = None  # accumulate all gradients.
-    for i, (xi, yi, zi) in enumerate(data):
-        xi = torch.tensor(xi, requires_grad=False).float()
-        sample_grad = calculate_sample_gradient(xi, theta)
-        if weights is not None:
-            sample_grad = weights[i] * sample_grad  # Apply weight.
+    def calculate_updated_weights(self, Dy, WDy, Xy, Wxy, lamb):
+        """Calculates the updated weights for the GradApprox algorithm."""
+        num_xy = len(Xy)
+        Wxy_updated = torch.zeros(num_xy)
 
-        if total_grad is None:
-            total_grad = sample_grad
-        else:
-            total_grad += sample_grad
+        # loop through the samples in Xy.
+        for i in range(num_xy):
+            xi, _, _ = Xy[i]
+            xi = torch.tensor(xi, requires_grad=False).float()
+            Wxy_updated[i] = 1
 
-    return total_grad / len(data)
-
-
-def calculate_sample_gradient(x, theta):
-    """Calculates gradient for one sample"""
-    # set x to require gradients.
-    x = x.requires_grad_(True)
-
-    # set model to train, to enable grad calc.
-    theta.train()
-    output = theta(x)
-
-    # calculate a dummy loss - CHANGE THIS to the actual loss function
-    # criterion = torch.nn.CrossEntropyLoss() # or similar
-    # loss = criterion(output, torch.tensor([y]))  # y is a single label
-
-    # example of L2 Loss:
-    loss = torch.sum(output**2)
-
-    # compute gradients
-    loss.backward()
-
-    # get gradients - extract the gradients from the parameters
-    # grads = [param.grad.clone().detach() for param in theta.parameters()]
-    # return grads
-    # flatten gradients:
-    grad_flat = torch.cat([param.grad.view(-1) for param in theta.parameters()])
-
-    # IMPORTANT - set gradients to zero before the next iteration
-    theta.zero_grad()
-
-    # detach so that the sample grad calculation is not retained in memory.
-    return grad_flat.detach()
-
-
-def calculate_updated_weights(Dy, WDy, Xy, Wxy, theta, lamb):
-    """Calculates the updated weights for the GradApprox algorithm."""
-    num_xy = len(Xy)
-    Wxy_updated = torch.zeros(num_xy)
-
-    # loop through the samples in Xy.
-    for i in range(num_xy):
-        xi, _, _ = Xy[i]
-        xi = torch.tensor(xi, requires_grad=False).float()
-        Wxy_updated[i] = 1
-
-    return Wxy_updated
+        return Wxy_updated
