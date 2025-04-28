@@ -32,6 +32,7 @@ class ContinualModel(nn.Module):
         self.transform = transform
         self.opt = SGD(self.net.parameters(), lr=self.args.lr)
         self.device = args.device
+        self.requires_indexes = False
 
         if not self.NAME or not self.COMPATIBILITY:
             raise NotImplementedError('Please specify the name and the compatibility of the model.')

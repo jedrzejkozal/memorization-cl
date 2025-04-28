@@ -23,23 +23,26 @@ class Gcr(ContinualModel):
     def __init__(self, backbone, loss, args, transform):
         super().__init__(backbone, loss, args, transform)
         self.buffer = Buffer(self.args.buffer_size, self.device, mode=args.buffer_policy)
-        self.weights = torch.ones(size=[self.args.buffer_size])
+        self.weights = torch.ones(size=[self.args.buffer_size]).to(self.args.device)
+        self.requires_indexes = True
 
     def begin_task(self, dataset):
-        pass
+        self.weights = torch.cat((self.weights, torch.ones(size=[len(dataset.train_loader.dataset)]).to(self.args.device)))
 
-    def observe(self, inputs, labels, not_aug_inputs):
+    def observe(self, inputs, labels, not_aug_inputs, dataset_indexes):
         real_batch_size = inputs.shape[0]
+        batch_weights = self.weights[dataset_indexes]  # TODO add buffer size to indexes after first task
 
         self.opt.zero_grad()
         if not self.buffer.is_empty():
-            buf_inputs, buf_labels = self.buffer.get_data(
-                self.args.minibatch_size, transform=self.transform)
+            buf_indexes, buf_inputs, buf_labels = self.buffer.get_data(self.args.minibatch_size, transform=self.transform, return_index=True)
             inputs = torch.cat((inputs, buf_inputs))
             labels = torch.cat((labels, buf_labels))
+            buf_weights = self.weights[buf_indexes]
+            batch_weights = torch.cat((batch_weights, buf_weights))
 
         outputs = self.net(inputs)
-        loss = self.loss(outputs, labels)
+        loss = self.weighted_loss(outputs, labels, batch_weights)
         loss.backward()
         self.opt.step()
 
@@ -47,6 +50,12 @@ class Gcr(ContinualModel):
                              labels=labels[:real_batch_size])
 
         return loss.item()
+
+    def weighted_loss(self, outputs, labels, batch_weights):
+        loss = self.loss(outputs, labels, reduction='none')
+        loss = loss * batch_weights
+        loss = torch.mean(loss)
+        return loss
 
     def end_task(self, dataset):
         buf_inputs, buf_labels = self.buffer.get_all_data()
@@ -61,7 +70,6 @@ class Gcr(ContinualModel):
 
         inputs = torch.cat([buf_inputs, dataset_inputs], dim=0)
         labels = torch.cat([buf_labels, dataset_labels], dim=0)
-        self.weights = torch.cat([self.weights, torch.ones(size=[len(train_dataset)])])
 
         self.opt.zero_grad()
         (buffer_inputs, buffer_labels), self.weights = self.grad_approx(inputs, labels, self.weights, lamb=0.0001, K=len(buf_inputs))
@@ -86,9 +94,6 @@ class Gcr(ContinualModel):
             tuple: A tuple containing the selected subset X (list of tuples) and
                 the corresponding weights Xw (torch.Tensor).
         """
-        # print(len(data_inputs))
-        # print(len(data_labels))
-
         # 1. Initialize LabelCount(D) - Number of classes.
         Y = len(torch.unique(data_labels))
 
@@ -99,10 +104,11 @@ class Gcr(ContinualModel):
         WDy_list = []
         for y in range(Y):
             idx_y = [i for i, yi in enumerate(data_labels) if yi == y]
-            Dy_data_list.append([data_inputs[i] for i in idx_y])
-            Dy_labels_list.append([data_labels[i] for i in idx_y])
+            idx_y = torch.Tensor(idx_y).to(self.args.device).to(torch.long)
+            Dy_data_list.append(data_inputs[idx_y])  # [data_inputs[i] for i in idx_y])
+            Dy_labels_list.append(data_labels[idx_y])  # [data_labels[i] for i in idx_y])
 
-            WDy = [Dw[i] for i in idx_y]
+            WDy = Dw[idx_y]  # [Dw[i] for i in idx_y]
             WDy_list.append(WDy)
 
         # 4. Initialize Replay Buffer and Replay Buffer weights
@@ -121,8 +127,13 @@ class Gcr(ContinualModel):
             Xy_labels = []
             Wxy = torch.zeros(size=[ky])
 
+            grad_Dy = self.compute_gradient(Dy_data, Dy_labels, WDy)  # tensor of size [grad_size]
+            # print()
+            # print(grad_Dy.shape) # shape = 11220132
+            grad_X = self.compute_buffer_gradiens(Dy_data, Dy_labels)  # Xy_data, Xy_labels)  # tensor of size [curr Xy_data size x grad_size]
+
             # 7. Calculate residuals
-            L_sub, residuals = self.calculate_residuals(Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb)
+            L_sub, residuals = self.calculate_residuals(grad_Dy, len(Dy_data), Xy_data, Xy_labels, Wxy, lamb)
 
             # 8. While subset size is less than the budget and approximation error is above tolerance
             while len(Xy_data) < ky and torch.norm(L_sub) >= epsilon:
@@ -148,20 +159,44 @@ class Gcr(ContinualModel):
 
         return X_data, X_labels, Xw
 
-    def calculate_residuals(self, Dy_data, Dy_labels, WDy, Xy_data, Xy_labels, Wxy, lamb):
+    def compute_gradient(self, Dy_data, Dy_labels, WDy):
+        """compute gradient for full dataset, that will be target for estimation"""
+        self.net.train()
+        output = self.net(Dy_data)
+        loss = self.weighted_loss(output, Dy_labels, WDy)
+        loss.backward()
+        grad_flat = torch.cat([param.grad.view(-1) for param in self.net.parameters()])
+        self.net.zero_grad()
+        grad_flat = grad_flat.detach()
+        return grad_flat
+
+    def compute_buffer_gradiens(self, Xy_data, Xy_labels):
+        buffer_gradients = list()
+
+        for i, (xi, yi) in enumerate(zip(Xy_data, Xy_labels)):
+            xi = xi.clone().detach().requires_grad_(False)
+            sample_grad = self.calculate_sample_gradient(xi, yi)
+            buffer_gradients.append(sample_grad.cpu())
+
+        buffer_gradients = torch.cat(buffer_gradients)
+        print()
+        print(buffer_gradients.shape)
+        exit()
+        return buffer_gradients
+
+    def calculate_residuals(self, dataset_grad, num_dy, Xy_data, Xy_labels, Wxy, lamb):
         """Calculates the residuals for the GradApprox algorithm."""
-        num_dy = len(Dy_data)
         L_sub = torch.zeros(num_dy)
         residuals = torch.zeros(num_dy)
 
         for i in range(num_dy):
-            total_grad = self.calculate_gradient(Dy_data, Dy_labels, WDy)
-            if len(Xy_data) > 0:
-                subset_grad = self.calculate_gradient(Xy_data, Xy_labels, Wxy)
-            else:
-                subset_grad = torch.zeros_like(total_grad)
+            # total_grad = self.calculate_gradient(Dy_data, Dy_labels, WDy)
+            # if len(Xy_data) > 0:
+            #     subset_grad = self.calculate_gradient(Xy_data, Xy_labels, Wxy)
+            # else:
+            #     subset_grad = torch.zeros_like(total_grad)
 
-            L_sub[i] = torch.norm(total_grad - subset_grad, p=2) ** 2 + lamb * torch.norm(Wxy, p=2)
+            L_sub[i] = torch.norm(dataset_grad - subset_grad, p=2) ** 2 + lamb * torch.norm(Wxy, p=2)
             residuals[i] = 2 * Wxy[i] * torch.norm(subset_grad) ** 2 + 2 * lamb * Wxy[i]
         return L_sub, residuals
 
@@ -198,7 +233,8 @@ class Gcr(ContinualModel):
         loss.backward()
         grad_flat = torch.cat([param.grad.view(-1) for param in self.net.parameters()])
         self.net.zero_grad()
-        return grad_flat.detach()
+        grad_flat = grad_flat.detach()
+        return grad_flat
 
     def calculate_updated_weights(self, Dy, WDy, Xy, Wxy, lamb):
         """Calculates the updated weights for the GradApprox algorithm."""

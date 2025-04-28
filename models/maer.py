@@ -34,6 +34,7 @@ class Maer(ContinualModel):
         self.trained_order_set = set()
         self.trained_iteration = []
         self.t = 0
+        self.requires_indexes = True
 
     def begin_task(self, dataset):
         self.iteration_counter = 0
