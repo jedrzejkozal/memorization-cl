@@ -119,7 +119,7 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
     model.net.to(model.device)
     results, results_mask_classes = [], []
 
-    # args.disable_log = True  # TODO remove it
+    args.disable_log = True  # TODO remove it
     if not args.disable_log and not args.debug:
         logger = MLFlowLogger(dataset.SETTING, dataset.NAME, model.NAME,
                               experiment_name=args.experiment_name, parent_run_id=args.parent_run_id, run_name=args.run_name)
