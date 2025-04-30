@@ -14,6 +14,9 @@ def get_parser() -> ArgumentParser:
     add_management_args(parser)
     add_experiment_args(parser)
     add_rehearsal_args(parser)
+
+    parser.add_argument('--t_out', default=10, type=int, help='number of auxilary model training during coreset selection')
+
     parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir'], default='balanced_reservoir', help='policy for selecting samples stored into buffer')
     return parser
 
@@ -52,14 +55,34 @@ class CSReLPrv(ContinualModel):
         loss.backward()
         self.opt.step()
 
-        self.buffer.add_data(examples=not_aug_inputs,
-                             labels=labels[:real_batch_size])
+        # self.buffer.add_data(examples=not_aug_inputs,
+        #                      labels=labels[:real_batch_size])
+
+        if not hasattr(self.buffer, 'examples'):
+            self.buffer.init_tensors(examples=not_aug_inputs, labels=labels[:real_batch_size], logits=None, task_labels=None)
 
         return loss.item()
 
     @torch.no_grad()
     def end_task(self, dataset):
         self.t += 1
+
+        import matplotlib.pyplot as plt
+
+        # Move the tensor to CPU and detach it from the computation graph
+        examples = self.buffer.examples.cpu().detach()
+        print(examples)
+
+        # Separate the channels
+        channels = ['Red', 'Green', 'Blue']
+        for i in range(examples.shape[1]):  # Assuming shape is (N, C, H, W)
+            channel_data = examples[:, i, :, :].flatten().numpy()
+            plt.hist(channel_data, bins=50, alpha=0.7, color=channels[i], label=f'{channels[i]} Channel')
+
+        plt.title('Histogram of Pixel Values in Buffer Examples')
+        plt.xlabel('Pixel Value')
+        plt.ylabel('Frequency')
+        plt.legend()
 
         task_size = self.args.buffer_size // self.t
         coreset_inputs = []
@@ -89,44 +112,66 @@ class CSReLPrv(ContinualModel):
         coreset_inputs = torch.cat(coreset_inputs)
         coreset_labels = torch.cat(coreset_labels)
         assert len(coreset_inputs) == self.args.buffer_size
-        self.buffer.exaples = coreset_inputs.to(self.args.device)
+
+        self.buffer.examples = coreset_inputs.to(self.args.device)
         self.buffer.labels = coreset_labels.to(self.args.device)
+        print()
+        print(coreset_labels)
+        print(torch.unique(self.buffer.labels, return_counts=True))
+
+        import matplotlib.pyplot as plt
+
+        # Move the tensor to CPU and detach it from the computation graph
+        examples = self.buffer.examples.cpu().detach()
+        print(examples)
+
+        plt.figure()
+        # Separate the channels
+        channels = ['Red', 'Green', 'Blue']
+        for i in range(examples.shape[1]):  # Assuming shape is (N, C, H, W)
+            channel_data = examples[:, i, :, :].flatten().numpy()
+            plt.hist(channel_data, bins=50, alpha=0.7, color=channels[i], label=f'{channels[i]} Channel')
+
+        plt.title('Histogram of Pixel Values in Buffer Examples')
+        plt.xlabel('Pixel Value')
+        plt.ylabel('Frequency')
+        plt.legend()
+        plt.show()
 
         # debug
         # print()
-        # print(coreset_labels)
-        # print(torch.unique(self.buffer.labels, return_counts=True))
-        # print()
-        # images = self.buffer.examples[-9:]
-        # # images = dataset.get_denormalization_transform()(images)
-        # if self.t > 1:
+        # images = self.buffer.examples[-144:]
+        # if self.t > 0:
         #     import matplotlib.pyplot as plt
 
-        #     fig, axes = plt.subplots(3, 3, figsize=(9, 9))
+        #     _, axes = plt.subplots(12, 12, figsize=(9, 9))
         #     for i, ax in enumerate(axes.flat):
         #         ax.imshow(images[i].permute(1, 2, 0).cpu().numpy())
         #         ax.axis('off')
         #     plt.tight_layout()
         #     plt.show()
 
-    def coreset_selection(self, inputs, labels, select_size, n_classes, test_transforms, t_out=10, concat_holdout=True):
+    def coreset_selection(self, inputs, labels, select_size, n_classes, test_transforms, concat_holdout=True):
         """algorithm 3 from the paper"""
         buf_inputs, buf_labels = self.buffer.get_all_data()
         buf_inputs, buf_labels = buf_inputs.cpu(), buf_labels.cpu()
         if concat_holdout:
             buf_inputs = torch.cat([inputs, buf_inputs], dim=0)
             buf_labels = torch.cat([labels, buf_labels], dim=0)
+        if self.t == 1:
+            buf_inputs = inputs
+            buf_labels = labels
 
         holdout_model = self.train_model(buf_inputs, buf_labels, n_classes)
         holdout_loss = self.evalute_loss(holdout_model, inputs, labels, test_transforms)
 
-        select_step = select_size // t_out
+        select_step = select_size // self.args.t_out
         coreset_inputs = []
         coreset_labels = []
         used_indexes = []
         rest = 0
-        for k in range(t_out):
-            size = select_step + 1 if k < select_size % t_out else select_step
+        for k in range(self.args.t_out):
+            size = select_step + 1 if k < select_size % self.args.t_out else select_step
             if rest >= 0:
                 size += rest
             if len(coreset_inputs) > 0:
@@ -139,10 +184,19 @@ class CSReLPrv(ContinualModel):
             for i in used_indexes:
                 ReL[i] = -torch.inf
 
-            if len(ReL) > size:
+            if len(ReL) - len(used_indexes) > size:
                 _, topk_idxs = torch.topk(ReL, k=size, sorted=False)
             else:
-                topk_idxs = torch.arange(0, len(ReL) - len(used_indexes), dtype=torch.long)
+                topk_idxs = list(range(0, len(ReL)))
+                for i in used_indexes:
+                    try:
+                        topk_idxs.remove(i)
+                    except ValueError:
+                        continue
+                topk_idxs = torch.Tensor(topk_idxs).to(torch.long)  # torch.arange(0, len(ReL), dtype=torch.long)
+
+            # topk_idxs = torch.randperm(len(inputs))[:size]  # TODO: debug
+            # print(topk_idxs)
             used_indexes.extend(topk_idxs.tolist())
 
             # print()
