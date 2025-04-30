@@ -161,21 +161,23 @@ class ContinualBenchmark:
                                     np.array(train_dataset.targets) < self.i + n_classes)
         test_mask = np.logical_and(np.array(test_dataset.targets) >= self.i,
                                    np.array(test_dataset.targets) < self.i + n_classes)
-        longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,
-                                       np.array(longtail_dataset.targets) < self.i + n_classes)
         self.select_subset(train_dataset, train_mask)
         self.select_subset(test_dataset, test_mask)
-        self.select_subset(longtail_dataset, longtail_mask)
 
         train_loader = DataLoader(train_dataset,
                                   batch_size=self.args.batch_size, shuffle=True, num_workers=self.args.num_workers)
         test_loader = DataLoader(test_dataset,
                                  batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
-        longtail_loader = DataLoader(longtail_dataset,
-                                     batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
         self.test_loaders.append(test_loader)
         self.train_loader = train_loader
-        self.longtail_loaders.append(longtail_loader)
+
+        if longtail_dataset is not None:
+            longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,
+                                           np.array(longtail_dataset.targets) < self.i + n_classes)
+            self.select_subset(longtail_dataset, longtail_mask)
+            longtail_loader = DataLoader(longtail_dataset,
+                                         batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+            self.longtail_loaders.append(longtail_loader)
 
         self.i += n_classes
         return train_loader, test_loader

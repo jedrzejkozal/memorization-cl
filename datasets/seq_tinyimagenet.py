@@ -132,8 +132,9 @@ class SequentialTinyImagenet(ContinualBenchmark):
             test_dataset = TestTinyImagenet(base_path() + 'TINYIMG',
                                             train=False, download=True, transform=self.test_transform)
 
-        self.permute_tasks(train_dataset, test_dataset)
-        train, test = self.store_masked_loaders(train_dataset, test_dataset)
+        self.permute_tasks(train_dataset)
+        self.permute_tasks(test_dataset)
+        train, test = self.store_masked_loaders(train_dataset, test_dataset, None)
         return train, test
 
     @property
