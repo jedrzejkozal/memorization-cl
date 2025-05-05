@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/77ce71763f9f4962b99457876c700ab1/artifacts
+end_time: 1746458357393
+entry_point_name: ''
+experiment_id: '899231754584608899'
+lifecycle_stage: active
+run_id: 77ce71763f9f4962b99457876c700ab1
+run_name: er balanced seed 1
+run_uuid: 77ce71763f9f4962b99457876c700ab1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746458357381
+status: 3
+tags: []
+user_id: jedrzejkozal
