@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/0867c505763043f484af3714838fb173/artifacts
+end_time: 1746513221252
+entry_point_name: ''
+experiment_id: '112104018620214336'
+lifecycle_stage: active
+run_id: 0867c505763043f484af3714838fb173
+run_name: maer middle seed 4
+run_uuid: 0867c505763043f484af3714838fb173
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746502797604
+status: 3
+tags: []
+user_id: jedrzejkozal
