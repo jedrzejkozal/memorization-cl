@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/d6e45200b3de4fcb9b80d65976c90751/artifacts
+end_time: 1746632612106
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: d6e45200b3de4fcb9b80d65976c90751
+run_name: er reservoir seed 4
+run_uuid: d6e45200b3de4fcb9b80d65976c90751
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746631451623
+status: 3
+tags: []
+user_id: jedrzejkozal
