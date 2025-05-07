@@ -67,7 +67,7 @@ def standard_benchmarks():
     }
 
     dataset_list = ['cifar10', 'cifar100', 'tiny-imagenet']
-    dataset_n_tasks = [5, 10, 10]  # [5, 10, 20]
+    dataset_n_tasks = [5, 10, 20]  # [5, 10, 20]
 
     table = list()
     for algorithm_name in algorithms:
