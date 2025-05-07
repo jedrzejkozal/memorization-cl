@@ -58,6 +58,7 @@ def standard_benchmarks():
     algorithms = list(runs_standard_benchmarks['cifar100'].keys())
 
     mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
+    # mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
     client = mlflow.tracking.MlflowClient(mlruns_path)
 
     dataset_experiments = {
