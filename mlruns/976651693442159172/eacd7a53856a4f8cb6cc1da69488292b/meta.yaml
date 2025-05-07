@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/eacd7a53856a4f8cb6cc1da69488292b/artifacts
+end_time: 1746638342755
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: eacd7a53856a4f8cb6cc1da69488292b
+run_name: bcsr reservoir seed 2
+run_uuid: eacd7a53856a4f8cb6cc1da69488292b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746635791693
+status: 3
+tags: []
+user_id: jedrzejkozal
