@@ -1,6 +1,7 @@
 import torch
 import torch.utils
 import torch.utils.data
+import numpy as np
 
 from models.utils.continual_model import ContinualModel
 from utils.args import add_management_args, add_experiment_args, add_rehearsal_args, ArgumentParser
@@ -45,7 +46,7 @@ class CSReLPrv(ContinualModel):
         real_batch_size = inputs.shape[0]
 
         self.opt.zero_grad()
-        if not self.buffer.is_empty():
+        if self.t > 0:
             buf_inputs, buf_labels = self.buffer.get_data(self.args.minibatch_size, transform=self.transform)
             inputs = torch.cat((inputs, buf_inputs))
             labels = torch.cat((labels, buf_labels))
@@ -66,23 +67,7 @@ class CSReLPrv(ContinualModel):
     @torch.no_grad()
     def end_task(self, dataset):
         self.t += 1
-
-        import matplotlib.pyplot as plt
-
-        # Move the tensor to CPU and detach it from the computation graph
-        examples = self.buffer.examples.cpu().detach()
-        print(examples)
-
-        # Separate the channels
-        channels = ['Red', 'Green', 'Blue']
-        for i in range(examples.shape[1]):  # Assuming shape is (N, C, H, W)
-            channel_data = examples[:, i, :, :].flatten().numpy()
-            plt.hist(channel_data, bins=50, alpha=0.7, color=channels[i], label=f'{channels[i]} Channel')
-
-        plt.title('Histogram of Pixel Values in Buffer Examples')
-        plt.xlabel('Pixel Value')
-        plt.ylabel('Frequency')
-        plt.legend()
+        self.buffer.num_seen_examples = self.args.buffer_size
 
         task_size = self.args.buffer_size // self.t
         coreset_inputs = []
@@ -115,41 +100,6 @@ class CSReLPrv(ContinualModel):
 
         self.buffer.examples = coreset_inputs.to(self.args.device)
         self.buffer.labels = coreset_labels.to(self.args.device)
-        print()
-        print(coreset_labels)
-        print(torch.unique(self.buffer.labels, return_counts=True))
-
-        import matplotlib.pyplot as plt
-
-        # Move the tensor to CPU and detach it from the computation graph
-        examples = self.buffer.examples.cpu().detach()
-        print(examples)
-
-        plt.figure()
-        # Separate the channels
-        channels = ['Red', 'Green', 'Blue']
-        for i in range(examples.shape[1]):  # Assuming shape is (N, C, H, W)
-            channel_data = examples[:, i, :, :].flatten().numpy()
-            plt.hist(channel_data, bins=50, alpha=0.7, color=channels[i], label=f'{channels[i]} Channel')
-
-        plt.title('Histogram of Pixel Values in Buffer Examples')
-        plt.xlabel('Pixel Value')
-        plt.ylabel('Frequency')
-        plt.legend()
-        plt.show()
-
-        # debug
-        # print()
-        # images = self.buffer.examples[-144:]
-        # if self.t > 0:
-        #     import matplotlib.pyplot as plt
-
-        #     _, axes = plt.subplots(12, 12, figsize=(9, 9))
-        #     for i, ax in enumerate(axes.flat):
-        #         ax.imshow(images[i].permute(1, 2, 0).cpu().numpy())
-        #         ax.axis('off')
-        #     plt.tight_layout()
-        #     plt.show()
 
     def coreset_selection(self, inputs, labels, select_size, n_classes, test_transforms, concat_holdout=True):
         """algorithm 3 from the paper"""
