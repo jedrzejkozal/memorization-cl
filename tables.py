@@ -11,6 +11,16 @@ def main():
 def standard_benchmarks():
     runs_standard_benchmarks = {
         'cifar10': {
+            'reservoir': None,
+            'reservoir balanced': ['c99bab55574646bea5eabe2de592828c', '77ce71763f9f4962b99457876c700ab1', '97b3f3836bce44e1ad3d82e50cdf646b', '2f693d34665d4675a3df4db5c3cc7c43', '60a1794a3f4e41f584109f749b84efcd'],
+            'rainbow memory': None,
+            'CLIB': None,
+            'GSS': None,
+            'GCR': None,
+            'goldilocks': None,
+            'bottom-k memscores': ['c4fbde6ec2e745a1ae7b4698a13dead4', 'c6fe21fa552c4e5898bf883c10b0d306', '6bc9c2989221444aa53324b4ac2c5bee', '38d1aa29e1984d78b6847544e7391b1c', '54c64dc0d42d425b952f63bfdb008baf'],
+            'middle-k memsocres': ['02956d57737142118196cb808c44a054', 'a0f294e605894d629e13623673701904', 'e8486e951df541149e3365c43eece0bd', 'd6536dbbd47a472ab4bd2b4dd6e61096', '9471fae61b4a436eaa26937459f0600e'],
+            'top-k memscores': ['5c49010705db4a2cba48e39129853bc8', 'ab428c0e241743b7a4a8bf1be45f5cee', 'aed3396ef8254f3d99f37deea093b063', 'ade66bfcfc5e4aaa8427cf00eb5262e7', '4edc25bc81fb48999d7c090af444130a'],
         },
         'cifar100': {
             # 'Joint': ['340276f083b64cc49dccd2d69c9ad66a', 'ef826a5b9e334f4b92cc3fa695847b8a', '663bcd4b333248a5b559a01e376585dd', 'b008c7833f404dfca446753cefdcdf1e', '4f53e6af47174940b04fa70d618af51a'],
@@ -31,6 +41,16 @@ def standard_benchmarks():
             'top-k memscores': ['a5be730e0fc64327b0d9e39eb02d3393', '823af178c35d4c40aa3bcecbf932dcf2', '03a6b3da5bdb4c4aae142b17f30a3523', '51b7604757d84f47a6957ca7f0340848', 'cb51df5347474927b9bf98165334b6b4'],
         },
         'tiny-imagenet': {
+            'reservoir': None,
+            'reservoir balanced': ['bafa5b7f16bd45fea0c7db4a1554f7d6', 'a5d541e1f405438b8eab4e0e8d5bc4ff', '881cef773361478d9541d8a319b3f26b', '34a413fad6854f8ea5eb9cdc1037b9da', '5d9f3f2216a440cdb6a6e98f555dfe57'],
+            'rainbow memory': None,
+            'CLIB': None,
+            'GSS': None,
+            'GCR': None,
+            'goldilocks': None,
+            'bottom-k memscores': ['8002808d66f84a27b0ad9358a65f28f7', '36470106ec524a87b3e0b79c0e155123', 'b0b31cec3fe045d6a894f8fed686d3da', '2afa12d886ac4152b0c9e4ef9d7423ff', '217cbd7d2ca64066bd3aa44f3d4d7f5a'],
+            'middle-k memsocres': ['ce62375f56f640f3b54604ee05a7a822', 'd80a0a58ecca4f6ab532ccfbd3ec2626', '05a411228036473580bfa7018b2a4e2f', '11380ab8acaf465e8e75ec1f715f0319', '0867c505763043f484af3714838fb173'],
+            'top-k memscores': ['642ec6bc7d984227ac3f16e54f8f5a1b', '8ba4fc428ffb486aacdd022ab0846d0e', '8aa7e387e47942d090c688ad78ccc6f1', '40b404a8276e4e108d0b300ca7fa5b28', 'bb1aa9161f45473cb4142a34ba31641e'],
         }
     }
 
@@ -41,13 +61,13 @@ def standard_benchmarks():
     client = mlflow.tracking.MlflowClient(mlruns_path)
 
     dataset_experiments = {
-        # 'cifar10': '',
+        'cifar10': '899231754584608899',
         'cifar100': '976651693442159172',
-        # 'tiny-imagenet': ''
+        'tiny-imagenet': '112104018620214336'
     }
 
-    dataset_list = ['cifar100',]  # ['cifar10', 'cifar100', 'tiny-imagenet']
-    dataset_n_tasks = [10]  # [5, 10, 20]
+    dataset_list = ['cifar10', 'cifar100', 'tiny-imagenet']
+    dataset_n_tasks = [5, 10, 10]  # [5, 10, 20]
 
     table = list()
     for algorithm_name in algorithms:
@@ -60,7 +80,7 @@ def standard_benchmarks():
             row.extend(metrics[:-1])
         table.append(row)
 
-    tab_latex = tabulate.tabulate(table, tablefmt="latex", headers=['method', 'acc', 'FM',])
+    tab_latex = tabulate.tabulate(table, tablefmt="latex", headers=['method', 'acc', 'FM', 'acc', 'FM', 'acc', 'FM',])
     tab_latex = tab_latex.replace('\\textbackslash{}', '\\')
     tab_latex = tab_latex.replace('\\{', '{')
     tab_latex = tab_latex.replace('\\}', '}')
