@@ -74,38 +74,42 @@ def main():
     experiment_id = '976651693442159172'
 
     results = {a: [] for a in algorithms}
+    results_std = {a: [] for a in algorithms}
     for algorithm_name in algorithms:
         for buffer_size in buffer_sizes:
             if algorithm_name not in runs_buffer_sizes[buffer_size]:
                 continue
             run_ids = runs_buffer_sizes[buffer_size][algorithm_name]
-            acc = calc_average_metrics(run_ids, client, digits=8)
+            acc, acc_std = calc_average_metrics(run_ids, client, digits=8)
             results[algorithm_name].append(acc)
+            results_std[algorithm_name].append(acc_std)
 
     print(results)
 
-    plt.subplot(1, 2, 1)
+    # plt.subplot(1, 2, 1)
     algorithms = ['reservoir balanced', 'bottom-k memscores', 'middle-k memsocres', 'top-k memscores']
     for algorithm_name in algorithms:
         accs = results[algorithm_name]
+        acc_std = results_std[algorithm_name]
         series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
         plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
+        plt.errorbar(series_buffer_sizes, accs, yerr=acc_std, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name], capsize=3)
     plt.legend()
     plt.xlabel('buffer size')
     plt.ylabel('test accuracy')
 
-    plt.subplot(1, 2, 2)
-    algorithms = ['bottom-k memscores', 'middle-k memsocres', 'high bottom-k', 'high middle-k']
-    for algorithm_name in algorithms:
-        accs = results[algorithm_name]
-        if len(accs) > 4:
-            accs = accs[1:5]
-        # series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
-        series_buffer_sizes = [2000, 5000, 10000, 20000]
-        plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
-    plt.legend()
-    plt.xlabel('buffer size')
-    plt.ylabel('test accuracy')
+    # plt.subplot(1, 2, 2)
+    # algorithms = ['bottom-k memscores', 'middle-k memsocres', 'high bottom-k', 'high middle-k']
+    # for algorithm_name in algorithms:
+    #     accs = results[algorithm_name]
+    #     if len(accs) > 4:
+    #         accs = accs[1:5]
+    #     # series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
+    #     series_buffer_sizes = [2000, 5000, 10000, 20000]
+    #     plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
+    # plt.legend()
+    # plt.xlabel('buffer size')
+    # plt.ylabel('test accuracy')
 
     plt.show()
 
@@ -115,8 +119,8 @@ def calc_average_metrics(dataset_run_ids, client, digits=3):
     for run_id in dataset_run_ids:
         acc = get_metrics(run_id, client)
         acc_all.append(acc)
-    avrg_acc, _ = rounded_reduction(acc_all, digits=digits)
-    return avrg_acc
+    avrg_acc, acc_std = rounded_reduction(acc_all, digits=digits)
+    return avrg_acc, acc_std
 
 
 if __name__ == '__main__':
