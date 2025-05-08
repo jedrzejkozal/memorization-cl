@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/439874c1c8844572ab49f9aee1f1774d/artifacts
+end_time: 1746655761294
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 439874c1c8844572ab49f9aee1f1774d
+run_name: 'full buffer seed '
+run_uuid: 439874c1c8844572ab49f9aee1f1774d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746653389500
+status: 3
+tags: []
+user_id: jkozal
