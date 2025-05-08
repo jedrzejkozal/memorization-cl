@@ -74,6 +74,8 @@ def add_management_args(parser: ArgumentParser) -> None:
     parser.add_argument('--n_tasks', type=int, default=None)
     parser.add_argument('--n_repeats', type=int, default=2, help='Number of tasks that will be repeated')
 
+    parser.add_argument('--memorisation_threshold', type=float, default=0.25, help='memorization threshold to establish memorized samples')
+
 
 def add_rehearsal_args(parser: ArgumentParser) -> None:
     """

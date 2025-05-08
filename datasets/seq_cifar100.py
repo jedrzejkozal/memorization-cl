@@ -86,7 +86,8 @@ class SequentialCIFAR100(ContinualBenchmark):
         else:
             test_dataset = TestCIFAR100(base_path() + 'CIFAR100', train=False, download=True, transform=self.test_transform)
         memorisation_scores = np.load('datasets/memorsation_scores_cifar100.npy')
-        longtail_indexes = np.argwhere(memorisation_scores > 0.25).flatten()
+        longtail_indexes = np.argwhere(memorisation_scores > self.args.memorisation_threshold).flatten()
+        # print('\n\nlongtail_indexes = ', len(longtail_indexes))
         longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
         self.select_subset(longtail_dataset, longtail_indexes)
 
