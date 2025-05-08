@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/93e1907e382541b9a64ca40c626fcd5f/artifacts
+end_time: 1746653385300
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 93e1907e382541b9a64ca40c626fcd5f
+run_name: 'LwF seed '
+run_uuid: 93e1907e382541b9a64ca40c626fcd5f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746652662486
+status: 3
+tags: []
+user_id: jkozal
