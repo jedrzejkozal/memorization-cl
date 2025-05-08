@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/8ca59c8ed7ce4779924a3a5790915eda/artifacts
+end_time: 1746666045477
+entry_point_name: ''
+experiment_id: '112104018620214336'
+lifecycle_stage: active
+run_id: 8ca59c8ed7ce4779924a3a5790915eda
+run_name: er reservoir seed 3
+run_uuid: 8ca59c8ed7ce4779924a3a5790915eda
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746654395810
+status: 3
+tags: []
+user_id: jedrzejkozal
