@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/6bdc100a882b4980a16dc8ac7d2ccff2/artifacts
+end_time: 1746733109196
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 6bdc100a882b4980a16dc8ac7d2ccff2
+run_name: LwF seed 2 mem_threshold 0.5
+run_uuid: 6bdc100a882b4980a16dc8ac7d2ccff2
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746732366890
+status: 3
+tags: []
+user_id: jkozal
