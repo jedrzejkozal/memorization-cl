@@ -19,7 +19,7 @@ def get_parser() -> ArgumentParser:
     add_rehearsal_args(parser)
     # parser.add_argument('--rehersal_policy', choices=['random', 'grasp', 'grasp_modified', 'memorisation', 'memorisation_modified'], required=True,
     #                     help='policy for selecting what samples should be retrived from the buffer')
-    parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir'], default='reservoir', help='policy for selecting samples stored into buffer')
+    parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir', 'full_buffer'], default='reservoir', help='policy for selecting samples stored into buffer')
     return parser
 
 
@@ -29,8 +29,10 @@ class Er(ContinualModel):
 
     def __init__(self, backbone, loss, args, transform):
         super(Er, self).__init__(backbone, loss, args, transform)
-        self.buffer = Buffer(self.args.buffer_size, self.device, mode=args.buffer_policy)
-        # self.buffer = FullBuffer(self.args.buffer_size, self.device, policy=args.rehersal_policy)
+        if self.args.buffer_policy == 'full_buffer':
+            self.buffer = FullBuffer(self.args.buffer_size, self.device, policy='random')
+        else:
+            self.buffer = Buffer(self.args.buffer_size, self.device, mode=args.buffer_policy)
 
     def observe(self, inputs, labels, not_aug_inputs):
 
