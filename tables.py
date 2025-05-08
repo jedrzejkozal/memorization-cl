@@ -41,7 +41,7 @@ def standard_benchmarks():
             'top-k memscores': ['a5be730e0fc64327b0d9e39eb02d3393', '823af178c35d4c40aa3bcecbf932dcf2', '03a6b3da5bdb4c4aae142b17f30a3523', '51b7604757d84f47a6957ca7f0340848', 'cb51df5347474927b9bf98165334b6b4'],
         },
         'tiny-imagenet': {
-            'reservoir': None,
+            'reservoir': ['84e655117d4847f3b974dee022ab659a', 'f06969fe7b7e4a849aa18ff102217c3c', 'e76f03d6a49f4c5e8df4f47c081fcac0', '8ca59c8ed7ce4779924a3a5790915eda', 'bd6158fd9fb84938b373749ff3a189e1'],
             'reservoir balanced': ['bafa5b7f16bd45fea0c7db4a1554f7d6', 'a5d541e1f405438b8eab4e0e8d5bc4ff', '881cef773361478d9541d8a319b3f26b', '34a413fad6854f8ea5eb9cdc1037b9da', '5d9f3f2216a440cdb6a6e98f555dfe57'],
             'rainbow memory': None,
             'CLIB': None,
