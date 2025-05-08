@@ -93,7 +93,9 @@ def main():
         acc_std = results_std[algorithm_name]
         series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
         plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
-        plt.errorbar(series_buffer_sizes, accs, yerr=acc_std, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name], capsize=3)
+        plt.errorbar(series_buffer_sizes, accs, yerr=acc_std, linewidth=1.0, color=algortihm_colors[algorithm_name], capsize=3)
+
+    plt.axhline(y=68.362, color='black', linestyle='--', linewidth=1.0,)  # label='y=68.362')
     plt.legend()
     plt.xlabel('buffer size')
     plt.ylabel('test accuracy')
