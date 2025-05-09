@@ -13,19 +13,19 @@ def main():
             'lwf': ['93e1907e382541b9a64ca40c626fcd5f', 'b045885a28174f39a6b761d92c2a26ab', 'ac269737061b4a159aba4a203c718966', '1bf5ddd62ca54847b10b37fd1089aca7', 'f02f61daa8f34fb7810099dbb8c74823'],
         },
         0.5: {
-            'er': ['60a84e62de034bb0bb0dbb328908bc52', 'f02defd31e8b4cf99bc0754ba9a4129e',],  # '3f4612b62ffb4a11902d1610a7ebcab0'],
-            'full': ['b979bc134d79483a91b0b5cd2800209d', 'c775e35167df4bde939ce37b63e0676e',],  # '8423b4441068402bbd3d4679bc0d6f50'],
-            'lwf': ['48a491ffc74e4c06a90d60084d8d4f5a', 'd9714d333aa34fc680d2f20a14883ecf',]  # '6bdc100a882b4980a16dc8ac7d2ccff2'],
+            'er': ['60a84e62de034bb0bb0dbb328908bc52', 'f02defd31e8b4cf99bc0754ba9a4129e', '3f4612b62ffb4a11902d1610a7ebcab0', '0841c9778a8148c4939950a998df7974', 'f4094541eff141cea7c041d40af830b9'],
+            'full': ['b979bc134d79483a91b0b5cd2800209d', 'c775e35167df4bde939ce37b63e0676e', '8423b4441068402bbd3d4679bc0d6f50', 'edc14089837447f0b671d64556c2bcee', '27f7a908454449a9aa92e56d9f387ed3'],
+            'lwf': ['48a491ffc74e4c06a90d60084d8d4f5a', 'd9714d333aa34fc680d2f20a14883ecf', '6bdc100a882b4980a16dc8ac7d2ccff2', '21d17fc1e1184361a4931ccde98354e3', '27abd0ae1d8d42448ab589dfb11ad44c'],
         },
         0.75: {
-            'er': ['433322efe59442abbdaa90633c2cba22', '1e34f9c884e24f1db8d5a8fb50c5e59f',],
-            'full': ['65594a03a3634cb59d4a7ff97dc7a39f', 'b22827c12489416798e606669199868e',],
-            'lwf': ['7ca23ca5b07a4410a385861752d53a4b', '01a6c67df52e4a7eabf52500c9c2d368',]
+            'er': ['433322efe59442abbdaa90633c2cba22', '1e34f9c884e24f1db8d5a8fb50c5e59f', 'faf286229edf4d739c314e210dbe5a32', '3e8f2552651347f487dc1c9066d7667f', 'ff8615a42c9b4283bb6f0b9d4fc45cf1'],
+            'full': ['65594a03a3634cb59d4a7ff97dc7a39f', 'b22827c12489416798e606669199868e', '738a429144ec46abab52e3214752f958', 'bb640bf93a37449cb4c38520143f9346', 'ab4d2654775d4e3a9d7aa44055d2aedb'],
+            'lwf': ['7ca23ca5b07a4410a385861752d53a4b', '01a6c67df52e4a7eabf52500c9c2d368', 'ad28a296b0304b38b9128f04f3af19b0', '4da4f17d815e4924913283bf47aecdb6', '53ece4d6a2cd4e91815e5447c841c805']
         },
         0.9: {
-            'er': ['915ea3dcea9e400880c2a287fe5c51e0', 'f00c477580f348ebb85671bc5b963689',],
-            'full': ['a382b6d73c434c1380b806eb39c161b8', '36750086f8a84fb99f6827ea6416994f',],
-            'lwf': ['e702c66202f04165ab80503f9f784bc5', 'e065e93d788345099c63c87e40b118da',]
+            'er': ['915ea3dcea9e400880c2a287fe5c51e0', 'f00c477580f348ebb85671bc5b963689', 'fce8e803dabe4bbcafebdc8ae0c7ed63', 'f1c30205f74343eba45301698eaac2c5', '8cb3e41ca49043eca27fc33863c840b7'],
+            'full': ['a382b6d73c434c1380b806eb39c161b8', '36750086f8a84fb99f6827ea6416994f', 'f5ad0eaa75d042648de9d3457426f95a', '0aaf985f37ce4cf0bc7ae7bc729fe52b', '8ce629295fdc4a30a7b70a85cb85dda9'],
+            'lwf': ['e702c66202f04165ab80503f9f784bc5', 'e065e93d788345099c63c87e40b118da', 'a37240d03cc84ed093fa03945cc412ae', '4ddde3026ade4ca38495329959549375', '5df2d7e897c34a9491e06f758eda0570']
         },
     }
     run_experiments = {
@@ -34,14 +34,10 @@ def main():
         'lwf': '0',
     }
 
-    plt.figure()
     plot_results(runs_dict[0.25], run_experiments)
     run_experiments['er'] = '0'
-    plt.figure()
     plot_results(runs_dict[0.5], run_experiments)
-    plt.figure()
     plot_results(runs_dict[0.75], run_experiments)
-    plt.figure()
     plot_results(runs_dict[0.9], run_experiments)
     plt.show()
 
@@ -75,6 +71,7 @@ def plot_results(runs_dict, run_experiments):
     # exit()
 
     color_range = plt.cm.tab10.colors
+    plt.figure(figsize=(18, 4))
 
     plt.subplot(1, 3, 1)
     for task_idx, color in zip(range(7), color_range):
