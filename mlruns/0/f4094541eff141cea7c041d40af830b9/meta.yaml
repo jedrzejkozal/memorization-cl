@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/f4094541eff141cea7c041d40af830b9/artifacts
+end_time: 1746766232226
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: f4094541eff141cea7c041d40af830b9
+run_name: er seed 4 mem_threshold 0.5
+run_uuid: f4094541eff141cea7c041d40af830b9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746763765572
+status: 3
+tags: []
+user_id: jkozal
