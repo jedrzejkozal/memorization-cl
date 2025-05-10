@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/6ec5e12998b14d4f8b370dc4eeb43e86/artifacts
+end_time: 1746870898956
+entry_point_name: ''
+experiment_id: '112104018620214336'
+lifecycle_stage: active
+run_id: 6ec5e12998b14d4f8b370dc4eeb43e86
+run_name: maer_derpp min seed 1
+run_uuid: 6ec5e12998b14d4f8b370dc4eeb43e86
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1746868182491
+status: 3
+tags: []
+user_id: jedrzejkozal
