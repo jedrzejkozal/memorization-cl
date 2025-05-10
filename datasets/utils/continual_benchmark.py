@@ -29,6 +29,7 @@ class ContinualBenchmark:
         :param args: the arguments which contains the hyperparameters
         """
         self.train_loader = None
+        self.train_loaders = []
         self.test_loaders = []
         self.longtail_loaders = []
         self.i = 0
@@ -170,6 +171,7 @@ class ContinualBenchmark:
                                  batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
         self.test_loaders.append(test_loader)
         self.train_loader = train_loader
+        self.train_loaders.append(train_loader)
 
         if longtail_dataset is not None:
             longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,

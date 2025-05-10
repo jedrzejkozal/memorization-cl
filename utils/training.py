@@ -3,6 +3,11 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+import torch.utils.data
+import torch.utils
+from torch.utils.data import DataLoader
+import torch.nn as nn
+import copy
 import math
 import sys
 from argparse import Namespace
@@ -135,10 +140,14 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
         if model.NAME != 'icarl' and model.NAME != 'pnn':
             _, _, random_results_class, random_results_task = evaluate(model, dataset_copy, debug=args.debug)
 
+    for _ in range(dataset.N_TASKS):  # preload all tasks for LP evaluation
+        dataset.get_data_loaders()
+
     print(file=sys.stderr)
     for t in range(dataset.N_TASKS):
         model.net.train()
-        train_loader, test_loader = dataset.get_data_loaders()
+        # train_loader, test_loader = dataset.get_data_loaders()
+        train_loader, test_loader = dataset.get_loaders(t)
         if hasattr(model, 'begin_task'):
             model.begin_task(dataset)
         if t and not args.ignore_other_metrics and not args.debug:
@@ -197,6 +206,50 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
         mean_acc = np.mean(accs[2:4], axis=1)
         print_mean_accuracy(mean_acc, t + 1, dataset.SETTING)
 
+        ############
+        # probe accuracy evaluation
+        print('########################################')
+
+        train_loader, _ = dataset.get_loaders(task_id=5)
+        all_features = []
+        all_labels = []
+        model.net.eval()
+        with torch.no_grad():
+            for data in train_loader:
+                inputs, labels = data[0].to(model.device), data[1]
+                outputs = model.net(inputs, returnt='features')
+                all_features.append(outputs.cpu())
+                all_labels.append(labels.cpu())
+        all_features = torch.cat(all_features, dim=0)
+        all_labels = torch.cat(all_labels)
+
+        print('\n\nprobe training')
+        output_size, input_size = model.net.linear.weight.data.shape
+        linear_probe = nn.Linear(input_size, output_size).to(model.device)
+        linear_probe = probe_training(linear_probe, all_features, all_labels, model.device, n_epochs=100)
+
+        # old_linear = copy.deepcopy(model.net.linear)
+        old_weights = copy.deepcopy(model.net.linear.weight.data)
+        old_bias = copy.deepcopy(model.net.linear.bias.data)
+
+        model.net.linear.weight.data = linear_probe.weight.data
+        model.net.linear.bias.data = linear_probe.bias.data
+
+        accs = evaluate(model, dataset, debug=args.debug)  # train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
+        # model.net.linear = old_linear
+        model.net.linear.weight.data = old_weights  # old_linear.weight.data
+        model.net.linear.bias.data = old_bias  # old_linear.bias.data
+
+        mean_acc = np.mean(accs[2:4], axis=1)
+        print_mean_accuracy(mean_acc, t + 1, dataset.SETTING)
+
+        print('########################################')
+
+        print('probe training done')
+        ############
+        # from utils.conf import set_random_seed
+        # set_random_seed(42)
+
         if not args.disable_log and not args.debug:
             logger.log(mean_acc)
             logger.log_fullacc(accs[2:])
@@ -209,3 +262,27 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
             if model.NAME != 'icarl' and model.NAME != 'pnn':
                 logger.add_fwt(results, random_results_class,
                                results_mask_classes, random_results_task)
+
+
+def probe_training(probe: nn.Module, all_features, all_labels, device, n_epochs=100):
+    probe.train()
+
+    optimizer = torch.optim.SGD(probe.parameters(), lr=0.1, momentum=0.9)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, [60, 75, 90], gamma=0.2, verbose=False)
+    criterion = nn.CrossEntropyLoss()
+
+    dataset = torch.utils.data.TensorDataset(all_features.cpu(), all_labels.cpu())
+    loader = torch.utils.data.DataLoader(dataset, batch_size=128, shuffle=True, num_workers=4)
+    for epoch in range(n_epochs):
+        for i, data in enumerate(loader):
+            inputs, labels = data[0].to(device), data[1].to(device)
+
+            optimizer.zero_grad()
+            outputs = probe(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+        scheduler.step()
+
+    return probe

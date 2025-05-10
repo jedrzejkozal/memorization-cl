@@ -99,6 +99,11 @@ class SequentialCIFAR100(ContinualBenchmark):
 
         return train, test
 
+    def get_loaders(self, task_id):
+        train = self.train_loaders[task_id]
+        test = self.test_loaders[task_id]
+        return train, test
+
     @property
     def train_transform(self):
         if self.args.additional_augmentations:
