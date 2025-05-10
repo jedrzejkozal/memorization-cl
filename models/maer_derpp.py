@@ -176,6 +176,7 @@ class MaerDerpp(ContinualModel):
             _, label, not_aug_img, _ = train_dataset[dataset_idx]
             self.buffer.examples[buffer_idx] = not_aug_img
             self.buffer.labels[buffer_idx] = label
+            self.buffer.logits[buffer_idx] = logits[dataset_idx]
             added_labels.append(label.item())
 
         print()
