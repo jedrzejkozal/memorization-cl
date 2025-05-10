@@ -5,7 +5,8 @@ import tabulate
 
 
 def main():
-    standard_benchmarks()
+    # standard_benchmarks()
+    standard_methods()
 
 
 def standard_benchmarks():
@@ -69,6 +70,65 @@ def standard_benchmarks():
 
     dataset_list = ['cifar10', 'cifar100', 'tiny-imagenet']
     dataset_n_tasks = [5, 10, 20]  # [5, 10, 20]
+
+    table = list()
+    for algorithm_name in algorithms:
+        row = list()
+        row.append(algorithm_name)
+        for dataset, n_tasks in zip(dataset_list, dataset_n_tasks):
+            run_ids = runs_standard_benchmarks[dataset][algorithm_name]
+            experiment_id = dataset_experiments[dataset]
+            metrics = calc_average_metrics(run_ids, client, experiment_id, n_tasks=n_tasks, digits=2)
+            row.extend(metrics[:-1])
+        table.append(row)
+
+    tab_latex = tabulate.tabulate(table, tablefmt="latex", headers=['method', 'acc', 'FM', 'acc', 'FM', 'acc', 'FM',])
+    tab_latex = tab_latex.replace('\\textbackslash{}', '\\')
+    tab_latex = tab_latex.replace('\\{', '{')
+    tab_latex = tab_latex.replace('\\}', '}')
+    print(tab_latex)
+    print("\n\n")
+
+
+def standard_methods():
+    runs_standard_benchmarks = {
+        'cifar100': {
+            'er-ace': ['9994e279b2f24745869612aeaffab008', '57f90e0404b34bfc95e37f4ce47004c0', '0ca3305c1b63448d9a63b82038845597', 'af78e6556ae74498a997af78fb153d27', '4a43a60bf1d640a484c2751fcb4517c8'],
+            'er-ace+bottom-k': ['6060bc368d8f4af6b35efe9ca6603385', '821a745afdb94c158a427b35a1da9df9', 'fad87309e0ec4495b693937fe0cb0203', '7adeba65ee304460be449b4b0887cd45'],
+            'er-ace+mid-k': ['e2ba945c6b4a4e1dac737cd0e72b390e', 'e5f2f15edf28410daba24fa84b708be8', 'c3a18e260079419a90c1a18c309423e2', '911b14e66816447eaa31e552b9b736d5'],
+            'er-ace+top-k': ['e9a91f850cb940b3a2621510fe4ac9bb', '2331b808fca24197a077d3593b0814ff', '158d347d47814b778db3636e9e342e04', 'e1638921ddba4eb79dc149907ab2f4dd'],
+            'der++': ['01db0d89336549eb91aabb936e80f2af', '138714f6703e4d88ad3587796c4acb9e', 'a8f0f30242554ca5a5af0111ccc54471', '8e240a7b89aa48bcbd8c38063691440d', '7475416ff3294a5bb345ef25141d80f2'],
+            'derpp+bottom-k': ['4e38a6508bda40f5bf744e28ada86d14', 'b01701d1c8a8437c9fa70fefea252225', 'c9c82233001145df856dc500db2903e6', '76fd7ab45890419eb6ead3ea9eb103b6'],
+            'derpp+mid-k': ['a3e85fe4f5a54f17ba5d8f964563d969', 'fcf9f88d9e2c40269e32a25c6e632bc0', '8c4c85b22fe243e48ec8d0d8fa45e50f'],
+            'derpp+top-k': ['e44fc9cef8604273ad0c04847553de6b', '82ce32208bc443958bf5aefdfc2b2ea5', '0af44abf8a554dca94b7642a1c2a6ec6'],
+        },
+        'tiny-imagenet': {
+            'er-ace': ['7e5454c30d8d484e9fd35f0cf0267034', '7d8fd3f886e44619abfabce160f2803f', '0fe6c4c4b70142b98d85c0769bfe310d', '6aa6a7cb644d425eaf224162a4ea20af'],
+            'er-ace+bottom-k': ['eba603563ebf41d18df817240a8c38fe', '2bf59f10e4b64fdfaa70112660018d8a'],
+            'er-ace+mid-k': ['1b9725a311874d50812abb35c9898de8'],
+            'er-ace+top-k': ['70496ef7e80f464c8e76704000b7a4f7'],
+            'der++': ['396be4ffa24b47e4a4d6705589c9e84b', '16409d33c37f4b51a72d9fd16d71bcf0', 'eee0c4e69c494f38b0fd93c5da8eb8f1'],
+            'derpp+bottom-k': ['e89aa480ffcb4e9da94961923d6d05de', '6ec5e12998b14d4f8b370dc4eeb43e86'],
+            'derpp+mid-k': ['f84cf2b4fde147638a2b39550fab4fe5', ],
+            'derpp+top-k': ['005e1f84627b4c8a83ce07cde9131c52', ],
+        }
+    }
+
+    # assert runs_standard_benchmarks['cifar10'].keys() == runs_standard_benchmarks['cifar100'].keys() == runs_standard_benchmarks['tiny-imagenet'].keys()
+    algorithms = list(runs_standard_benchmarks['cifar100'].keys())
+
+    mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
+    # mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
+    client = mlflow.tracking.MlflowClient(mlruns_path)
+
+    dataset_experiments = {
+        'cifar10': '899231754584608899',
+        'cifar100': '976651693442159172',
+        'tiny-imagenet': '112104018620214336'
+    }
+
+    dataset_list = ['cifar100', 'tiny-imagenet']
+    dataset_n_tasks = [10, 20]
 
     table = list()
     for algorithm_name in algorithms:
