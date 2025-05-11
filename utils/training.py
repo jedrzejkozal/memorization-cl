@@ -44,14 +44,6 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
 
     train_acc, train_acc_mask_classes = compute_acc(model, dataset, k, dataset.train_loader, debug=debug)
 
-    test_lt_accs, test_lt_accs_mask_classes = [], []
-    for k, lt_loader in enumerate(dataset.longtail_loaders):
-        if last and k < len(dataset.longtail_loaders) - 1:
-            continue
-        acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, lt_loader, debug=debug)
-        test_lt_accs.append(acc_class_incr)
-        test_lt_accs_mask_classes.append(acc_task_incr)
-
     model.net.train(status)
     print('\nevaluation task train acc:')
     print('{:.2f}'.format(train_acc))
@@ -61,12 +53,22 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
         accs_str += '{:.2f}, '.format(a)
     accs_str = accs_str[:-2]
     print(accs_str)
-    print('\nevaluation task longtail accs:')
-    accs_str = ''
-    for a in test_lt_accs:
-        accs_str += '{:.2f}, '.format(a)
-    accs_str = accs_str[:-2]
-    print(accs_str)
+
+    for threshold in [0.25, 0.5, 0.75, 0.9]:
+        test_lt_accs, test_lt_accs_mask_classes = [], []
+        for k, lt_loader in enumerate(dataset.longtail_loaders_thresh[threshold]):
+            if last and k < len(dataset.longtail_loaders) - 1:
+                continue
+            acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, lt_loader, debug=debug)
+            test_lt_accs.append(acc_class_incr)
+            test_lt_accs_mask_classes.append(acc_task_incr)
+
+        print(f'\nevaluation task longtail accs threshold = {threshold}:')
+        accs_str = ''
+        for a in test_lt_accs:
+            accs_str += '{:.2f}, '.format(a)
+        accs_str = accs_str[:-2]
+        print(accs_str)
     return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
 
 
@@ -248,7 +250,7 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
         print('probe training done')
         ############
         # from utils.conf import set_random_seed
-        # set_random_seed(42)
+        # set_random_seed(42) # for testing
 
         if not args.disable_log and not args.debug:
             logger.log(mean_acc)

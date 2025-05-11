@@ -32,6 +32,14 @@ class ContinualBenchmark:
         self.train_loaders = []
         self.test_loaders = []
         self.longtail_loaders = []
+
+        self.longtail_loaders_thresh = {
+            0.25: [],
+            0.5: [],
+            0.75: [],
+            0.9: [],
+        }
+
         self.i = 0
         self.args = args
         self.image_size = args.img_size

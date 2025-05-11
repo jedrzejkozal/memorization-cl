@@ -21,6 +21,7 @@ from datasets.utils.validation import get_train_val
 from utils.conf import base_path_dataset as base_path
 from datasets.utils.additional_augmentations import CIFAR10Policy
 from datasets.utils.ops import Cutout
+from torch.utils.data import DataLoader
 
 
 class TestCIFAR100(CIFAR100):
@@ -94,6 +95,22 @@ class SequentialCIFAR100(ContinualBenchmark):
         self.permute_tasks(train_dataset)
         self.permute_tasks(test_dataset)
         self.permute_tasks(longtail_dataset)
+
+        for threshold in [0.25, 0.5, 0.75, 0.9]:
+            longtail_indexes = np.argwhere(memorisation_scores > threshold).flatten()
+            # print(f'longtail_indexes threshold {threshold} len = ', len(longtail_indexes))
+            longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+            self.select_subset(longtail_dataset, longtail_indexes)
+            self.permute_tasks(longtail_dataset)
+
+            longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,
+                                           np.array(longtail_dataset.targets) < self.i + self.N_CLASSES_PER_TASK)
+            self.select_subset(longtail_dataset, longtail_mask)
+            longtail_loader = DataLoader(longtail_dataset,
+                                         batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+            # self.longtail_loaders.append(longtail_loader)
+            loaders_list = self.longtail_loaders_thresh[threshold]
+            loaders_list.append(longtail_loader)
 
         train, test = self.store_masked_loaders(train_dataset, test_dataset, longtail_dataset)
 
