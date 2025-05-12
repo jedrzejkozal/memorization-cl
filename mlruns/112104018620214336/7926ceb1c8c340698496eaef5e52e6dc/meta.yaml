@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/7926ceb1c8c340698496eaef5e52e6dc/artifacts
+end_time: 1747046474976
+entry_point_name: ''
+experiment_id: '112104018620214336'
+lifecycle_stage: active
+run_id: 7926ceb1c8c340698496eaef5e52e6dc
+run_name: maer_er_ace min seed 0
+run_uuid: 7926ceb1c8c340698496eaef5e52e6dc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747042663486
+status: 3
+tags: []
+user_id: jedrzejkozal

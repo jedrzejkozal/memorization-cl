@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/ecdd4131a43b4fea9c0e055e54e4ac6f/artifacts
+end_time: 1747046737655
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: ecdd4131a43b4fea9c0e055e54e4ac6f
+run_name: maer_er_ace middle seed 0
+run_uuid: ecdd4131a43b4fea9c0e055e54e4ac6f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747042623826
+status: 3
+tags: []
+user_id: jedrzejkozal
