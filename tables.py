@@ -111,9 +111,9 @@ def standard_methods():
             'er-ace+mid-k': ['1b9725a311874d50812abb35c9898de8', '2f1f476eabe94574b282f7332c2184ef', '6451181337244d87899db70638935775', '7b92e8615ddb4017970d5eebdc244bb2', '746687b33e4240dd84a83a2420cf85c2'],
             'er-ace+top-k': ['70496ef7e80f464c8e76704000b7a4f7', '10ed8f24624e479b802699e6241c7a22', '6bfa36f4d5474be29f8ede5dfaccd063', '1b5aaeb31c504f8699cc3dc7393e9728', '6103d32f6e79450b927c541ea9039096'],
             'der++': ['396be4ffa24b47e4a4d6705589c9e84b', '16409d33c37f4b51a72d9fd16d71bcf0', 'eee0c4e69c494f38b0fd93c5da8eb8f1', '6fdce285864442d4b33f232bb13edb3e', '2b070a15b6454f0ba4d967c17456b328'],
-            'derpp+bottom-k': ['140208e8e7e04390a38a06b387dea2bf'],  # ['e89aa480ffcb4e9da94961923d6d05de', '6ec5e12998b14d4f8b370dc4eeb43e86'],
-            'derpp+mid-k': ['de46efc59b1848bebe281a4e9a786c89', 'ec8c6d4e47b040378dfb2b430bf54d3e'],  # ['f84cf2b4fde147638a2b39550fab4fe5', ],
-            'derpp+top-k': ['b1ca34bde01d4b008f55d344bdfcd033', 'eb3c37fdf3a24e85aa4603234ae01c79'],  # ['005e1f84627b4c8a83ce07cde9131c52', ],
+            'derpp+bottom-k': ['140208e8e7e04390a38a06b387dea2bf', '7732dd08d1ee49868b65772b50829257'],  # ['e89aa480ffcb4e9da94961923d6d05de', '6ec5e12998b14d4f8b370dc4eeb43e86'],
+            'derpp+mid-k': ['de46efc59b1848bebe281a4e9a786c89', 'ec8c6d4e47b040378dfb2b430bf54d3e', '71a1fb1470214d5683ac117810403436'],  # ['f84cf2b4fde147638a2b39550fab4fe5', ],
+            'derpp+top-k': ['b1ca34bde01d4b008f55d344bdfcd033', 'eb3c37fdf3a24e85aa4603234ae01c79', 'dce1bfb98ffb4fe4bd4ba04f2419b9de'],  # ['005e1f84627b4c8a83ce07cde9131c52', ],
         }
     }
 
