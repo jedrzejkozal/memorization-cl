@@ -1,3 +1,4 @@
+# https://github.com/MingruiLiu-ML-Lab/Bilevel-Coreset-Selection-via-Regularization/blob/main/core/bcsr_coreset.py
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Subset, DataLoader
@@ -18,6 +19,7 @@ def get_parser() -> ArgumentParser:
     add_experiment_args(parser)
     add_rehearsal_args(parser)
     parser.add_argument('--buffer_policy', choices=['balanced_reservoir', 'reservoir'], default='reservoir', help='policy for selecting samples stored into buffer')
+    parser.add_argument('--grad_clip', default=1.0, type=float, help='gradient clipping to avoid NaN values in loss in inner_loop training')
     return parser
 
 
@@ -44,7 +46,7 @@ class SimpleCNN(nn.Module):
 
 
 class Training():
-    def __init__(self, proxy_model, beta, device, lr_proxy_model, lr_weights):
+    def __init__(self, proxy_model, beta, device, lr_proxy_model, lr_weights, grad_clip=1.0):
         self.proxy_model = proxy_model
         self.lr_p = lr_proxy_model
         self.lr_w = lr_weights
@@ -55,6 +57,7 @@ class Training():
         self.beta = beta
         self.buffer = []
         self.identity = []
+        self.grad_clip = grad_clip
 
     def init_proxy_model(self):
         for m in self.proxy_model.modules():
@@ -73,6 +76,7 @@ class Training():
             output = self.proxy_model(data)
             loss = torch.mean(sample_weights * F.cross_entropy(output, target, reduction='none'))
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.proxy_model.parameters(), self.grad_clip)
             self.optimizer_theta_p_model.step()
             self.proxy_model.zero_grad()
         return loss
@@ -253,7 +257,7 @@ class Bcsr(ContinualModel):
 
         model = SimpleCNN(dataset.N_CLASSES, larger_input=dataset.NAME == 'seq-tinyimg').to(device)
 
-        selector = BCSR(model, lr_proxy_model=0.01, beta=1.0, device=device)
+        selector = BCSR(model, lr_proxy_model=0.01, beta=1.0, device=device, max_inner_it=50)
         selected_indices, _ = selector.select_coreset(model, X_task.to(device), y_task.to(device), task_id, topk=buffer_size // (task_id + 1))
 
         added_labels = []
