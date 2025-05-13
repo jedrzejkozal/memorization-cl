@@ -151,10 +151,12 @@ class RainbowMemory(ContinualModel):
             augmentations = dataset.train_transform
             self.selector = RainbowMemorySelector(self.args.buffer_size, 5, augmentations, device=device)
 
-        buf_inputs, buf_labels = self.buffer.get_data(len(self.buffer), transform=self.transform)
+        buf_inputs, buf_labels = self.buffer.get_data(len(self.buffer), transform=None)
+
         buffer_dataset = TensorDataset(buf_inputs.cpu(), buf_labels.cpu())
         buffer_dataset.targets = buf_labels.cpu()
-        x, y = self.selector.select_coreset(self.net, DatasetWrapper(dataset.train_loader.dataset), buffer_dataset)
+        with torch.no_grad():
+            x, y = self.selector.select_coreset(self.net, DatasetWrapper(dataset.train_loader.dataset), buffer_dataset)
         assert len(x) == self.args.buffer_size
         assert len(y) == self.args.buffer_size
         self.buffer.examples = x.to(self.device)
