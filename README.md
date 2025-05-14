@@ -59,6 +59,7 @@ Here is the desciption of primary repo components:
  - eval_splits.py - script for computing and saving memroization scores for samples in choosen dataset. Uses networks trained with `train_splits.py`. For more details run ```python eval_splits.py --help```
  - train_whole.py - script for training networks and computing prediction probability for leave-one-out memorization definition.
 
+The experiments with linear probes are implemented on separated branch of our repo, as it required substantial modification to the training code.
 
 ## Results
 
