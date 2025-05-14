@@ -2,8 +2,13 @@
 
 This repository is the official implementation of [What is the role of memorization in Continual Learning?](https://arxiv.org/). 
 
-Abstract:
-TBD
+---
+**Abstract**
+
+Memorization is known to impact the performance of deep learning algorithms. Prior works have studied memorization primarily in the context of generalization and privacy. In this work, we focus on studying the effects of memorization on continual training in non-stationary environments. While forgetting prevention and memorization seem to be similar, but they are distinct. We discuss the difference between them and design extensive experiments to evaluate the influence of memorization on Continual Learning. 
+We find that learning examples with high memorization scores are forgotten faster than regular samples. Our results indicate that memorization is necessary to achieve the highest performance, however, at low memory regimes, forgetting of regular samples is more important. We show that the importance of a high-memorization score sample rises with an increase of the buffer size. 
+To showcase how memorization can be used during incremental training, we introduce a memorization proxy and use it in the buffer policy problem. We demonstrate that including samples with a higher proxy memorization score is beneficial when the buffer size is large.
+---
 
 ![our main results](memscores_results.png)
 
