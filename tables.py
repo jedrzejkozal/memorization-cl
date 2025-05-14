@@ -46,7 +46,7 @@ def standard_benchmarks():
         'tiny-imagenet': {
             'reservoir': ['84e655117d4847f3b974dee022ab659a', 'f06969fe7b7e4a849aa18ff102217c3c', 'e76f03d6a49f4c5e8df4f47c081fcac0', '8ca59c8ed7ce4779924a3a5790915eda', 'bd6158fd9fb84938b373749ff3a189e1'],
             'reservoir balanced': ['bafa5b7f16bd45fea0c7db4a1554f7d6', 'a5d541e1f405438b8eab4e0e8d5bc4ff', '881cef773361478d9541d8a319b3f26b', '34a413fad6854f8ea5eb9cdc1037b9da', '5d9f3f2216a440cdb6a6e98f555dfe57'],
-            'rainbow memory': ['bd96c380ef2d4171913ac7ac37a96684', '8eab1078f38a48dfbc0e5027f8c45402', '5b5f5cea4d824534afe63e39f5d842df'],
+            'rainbow memory': ['bd96c380ef2d4171913ac7ac37a96684', '8eab1078f38a48dfbc0e5027f8c45402', '5b5f5cea4d824534afe63e39f5d842df', '25b0c6e30c664d0d9bca5dbba2989d5f', 'fef4eeeca5e449609a8b26bd25a416da'],
             'CLIB': None,
             'GSS': None,
             'GCR': None,
