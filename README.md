@@ -28,12 +28,19 @@ Most of the experiments were done with CUDA Version: 12.2.
 
 ## Training
 
-To train the model(s) in the paper, run this command:
+To train the method introduced in the paper, run this command:
 
 ```train
-python main.py --model="maer" --buffer_policy="min" --dataset="seq-cifar100" --lr=0.1 --buffer_size=500 --ignore_other_metrics --seed=42 --n_epochs=50 --n_tasks=10
+python main.py --model="maer" --buffer_policy="min" --dataset="seq-cifar100" --lr=0.1 --buffer_size=500 --ignore_other_metrics --seed=42 --n_epochs=50 --n_tasks=10 --device="cuda:0"
 ```
 The commands above will automatically run evaluation of the models as well. 
+
+We provide a single file that could run all of the experiments with proposed method:
+
+```run all
+./reproduce.sh 
+```
+This script runs all on device "cuda:0". Runing all of the experiments would take a long time, therefore use it rather as the reference and select experiments that you want to run.
 
 ## Repo organization
 
