@@ -18,7 +18,7 @@ def standard_benchmarks():
             'CLIB': None,
             'GSS': None,
             'GCR': None,
-            'PBCS': ['9705d7a5fa1046149ed2822d27f06f28', 'd66552597d9142908fc93f94ca3225e6'],
+            'PBCS': ['9705d7a5fa1046149ed2822d27f06f28', 'd66552597d9142908fc93f94ca3225e6', '476ed4dca489454ba6b50bdd3ad33e8e', 'e97a3d2868a54fb1bcdd3be65ff91f97', 'c67a1c0acad54fceaabfdc52965e60b2'],
             'BCSR': ['d10b86c74914407a9c49c1d758bc98b9', 'f1f41e0970ab41e59b95be5f4291afb1', '9eea09d684114e0991ad8018ba8a62b5', '4997659f513243a3a0e27281cc904705', '6b6c65b709a546e9bf8c404228ea6e98'],
             'bottom-k memscores': ['c4fbde6ec2e745a1ae7b4698a13dead4', 'c6fe21fa552c4e5898bf883c10b0d306', '6bc9c2989221444aa53324b4ac2c5bee', '38d1aa29e1984d78b6847544e7391b1c', '54c64dc0d42d425b952f63bfdb008baf'],
             'middle-k memsocres': ['02956d57737142118196cb808c44a054', 'a0f294e605894d629e13623673701904', 'e8486e951df541149e3365c43eece0bd', 'd6536dbbd47a472ab4bd2b4dd6e61096', '9471fae61b4a436eaa26937459f0600e'],
