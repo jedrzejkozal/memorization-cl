@@ -1,32 +1,82 @@
 # What is the role of memorization in Continual Learning?
 
-This repo contains code with experiments for paper "What is the role of memorization in Continual Learning?"
+This repository is the official implementation of [What is the role of memorization in Continual Learning?](https://arxiv.org/). 
+
+Abstract:
+TBD
+
+![our main results](memscores_results.png)
 
 
+## Requirements
 
-## Environment
+To install requirements:
 
-We provide the specification of envioronment used in the form of conda .yml file.
-
-Before runing any experiments please run following commands to create and activate the environement:
-
-```
+```setup
 conda env create -f env.yml -y
-conda activate interpolation
+conda activate memorisation-cl
 ```
+Before runing any experiments please run following commands to create and activate the environement.
+Datasets are automatically downloaded into '/usr/share/mammoth_datasets/' folder. It may be the case, that python script will not have permission to create and modify files in that directory. In that case manual change of linux permissions is required for specific folders. 
 
+Most of the experiments were done with CUDA Version: 12.2.
 
-Most of the experiments were done with nvidia Driver Version: 535.230.02 and CUDA Version: 12.2.
+## Training
+
+To train the model(s) in the paper, run this command:
+
+```train
+python main.py --model="maer" --buffer_policy="min" --dataset="seq-cifar100" --lr=0.1 --buffer_size=500 --ignore_other_metrics --seed=42 --n_epochs=50 --n_tasks=10
+```
+The commands above will automatically run evaluation of the models as well. 
 
 ## Repo organization
 
-Our repo is cased on Continual Learning mammoth library [link](https://github.com/aimagelab/mammoth)
+Our repo is based on Continual Learning mammoth library [link](https://github.com/aimagelab/mammoth) with primary components for Continual Learning based on mammoth.
+Here is the desciption of primary repo components:
+
+ - backbones - directory containing code with different neural network architectures
+ - code - directory containing code for downloading and managing data, actural datasets are downloading into '/usr/share/mammoth_datasets/' - see Requirements section for details.
+ - mlruns - directory with logs from MLflow system
+ - models - directory with implementation of selected Continual Learning algorithms
+ - utils - directory with utilitis
+ - various files with .npy extension - memorization scores computed in our experiments
+ - main.py - script for runing Continual Learning training
+ - plots_memorization.py, plots.py, tables_new.py, tables.py - generating plots and tables for our paper
+ - train_splits.py - script for training neural networks for evaluation of memorization scores. For more details run ```python train_splits.py --help```
+ - eval_splits.py - script for computing and saving memroization scores for samples in choosen dataset. Uses networks trained with `train_splits.py`. For more details run ```python eval_splits.py --help```
+ - train_whole.py - script for training networks and computing prediction probability for leave-one-out memorization definition.
 
 
+## Results
 
-## scripts to run and reproduce results from the paper
+Our method achieves the following performance on :
 
-TODO add bash scripts
+### Incremental training with Seq-Cifar10 (5 tasks)
+
+| Model name         |     Acc         |       FM       |
+| ------------------ |---------------- | -------------- |
+| maer-botom-k       |     56.04%      |      41.8%     |
+| maer-middle-k      |     55.96%      |      41.8%     |
+| maer-max-k         |     41.16%      |      56.6%     |
+
+### Incremental training with Seq-Cifar100 (10 tasks)
+
+| Model name         |     Acc         |       FM       |
+| ------------------ |---------------- | -------------- |
+| maer-botom-k       |     25.88%      |      61.6%     |
+| maer-middle-k      |     23.62%      |      63.81%    |
+| maer-max-k         |     17.28%      |      69.95%    |
+
+### Incremental training with Tiny-ImageNet (20 tasks)
+
+| Model name         |     Acc         |       FM       |
+| ------------------ |---------------- | -------------- |
+| maer-botom-k       |     7.85%       |      74.87%     |
+| maer-middle-k      |     7.11%       |      75.52%     |
+| maer-max-k         |     5.18%       |      77.12%     |
+
+
 
 ## Preview results from the paper
 
@@ -39,7 +89,6 @@ mlflow ui
 ```
 
 And then go to [http://127.0.0.1:5000/#/](http://127.0.0.1:5000/#/) in your brower to see all the results from the experiments we runned and exact hyperparameters used in each run.
-
 
 
 ## Citation policy
