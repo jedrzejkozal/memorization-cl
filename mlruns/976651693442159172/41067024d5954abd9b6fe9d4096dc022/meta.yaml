@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/41067024d5954abd9b6fe9d4096dc022/artifacts
+end_time: 1747186163570
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: 41067024d5954abd9b6fe9d4096dc022
+run_name: pbcs seed 4
+run_uuid: 41067024d5954abd9b6fe9d4096dc022
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747179520450
+status: 3
+tags: []
+user_id: jedrzejkozal
