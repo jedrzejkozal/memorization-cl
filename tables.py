@@ -6,7 +6,7 @@ import tabulate
 
 def main():
     standard_benchmarks()
-    standard_methods()
+    # standard_methods()
 
 
 def standard_benchmarks():
@@ -38,7 +38,7 @@ def standard_benchmarks():
             'GSS': None,
             'GCR': None,
             'PBCS': ['c396778f803d40078a21bca1b75b7991', '38eedda0fc6242dc99c710cfcacb2cf0', '75ceaf111b7a458e9ed1551332da62fd', 'b17fde4cbd744feb9871e03d8c3cea7f', '41067024d5954abd9b6fe9d4096dc022'],
-            'BCSR': ['71804fb02b404a3a9080a6db28ef0481', 'eacd7a53856a4f8cb6cc1da69488292b', '27204094a76b4d61a9cf7cc2acb3d5c5', '5c64641876234bf4bc073b5e9bb6493f'],
+            'BCSR': ['b338a354a0ef4563a078b90f10c6817e', '71804fb02b404a3a9080a6db28ef0481', 'eacd7a53856a4f8cb6cc1da69488292b', '27204094a76b4d61a9cf7cc2acb3d5c5', '5c64641876234bf4bc073b5e9bb6493f'],
             'bottom-k memscores': ['20ee555f00694b06ada8cef55625c42a', 'f6055777a13c4e9499c3e1c8a272d9bb', '9e1dffae9cdd4b2ebe6a9dc3ba1cdf08', '140893946fc746e2960fc3935900d911', '975375c2d35d496583b66c3a784a7930'],
             'middle-k memsocres': ['2204230c9dfa41dcb367e31b0e32c28e', '1be9cdd652424198a54f9216e460688e', 'a09a00b7f3fe41d189867a164613550e', 'e5c0e64a68b74d6e9dd6d9d06dfda5b6', '4ceb856389574ef88a02c1bf32674e1b'],
             'top-k memscores': ['a5be730e0fc64327b0d9e39eb02d3393', '823af178c35d4c40aa3bcecbf932dcf2', '03a6b3da5bdb4c4aae142b17f30a3523', '51b7604757d84f47a6957ca7f0340848', 'cb51df5347474927b9bf98165334b6b4'],
@@ -61,8 +61,8 @@ def standard_benchmarks():
     # assert runs_standard_benchmarks['cifar10'].keys() == runs_standard_benchmarks['cifar100'].keys() == runs_standard_benchmarks['tiny-imagenet'].keys()
     algorithms = list(runs_standard_benchmarks['cifar100'].keys())
 
-    mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
-    # mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
+    # mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
+    mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
     client = mlflow.tracking.MlflowClient(mlruns_path)
 
     dataset_experiments = {
