@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/memorization-cl/mlruns/1/c15c31ad707240828aac0cffbdc4686c/artifacts
+end_time: 1747180800825
+entry_point_name: ''
+experiment_id: '899231754584608899'
+lifecycle_stage: active
+run_id: c15c31ad707240828aac0cffbdc4686c
+run_name: rainbow memory seed 4
+run_uuid: c15c31ad707240828aac0cffbdc4686c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1747177989112
+status: 3
+tags: []
+user_id: jedrzejkozal
