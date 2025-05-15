@@ -50,7 +50,7 @@ def standard_benchmarks():
             'CLIB': None,
             'GSS': None,
             'GCR': None,
-            'PBCS': ['0ca36c65bf274a01bea5fb8d9d3831d9', '21d4f4269d8a4ccd90971564c8aea453'],
+            'PBCS': ['0ca36c65bf274a01bea5fb8d9d3831d9', '21d4f4269d8a4ccd90971564c8aea453', '1b74a7c0200b4072b221ebbf40322ef1', '5ee9855e9a814b60a59f179dac14afb0', '04587c5d02e644a2b6bff3280b9259d8'],
             'BCSR': ['ac4a154643d6443d82980852a24355c7', 'c076b493479d48688cc7b7d4b02c043c', 'cdea5779181a4b33887693bca8b1b816', 'c3f49ab29cb442d5bda0be05e11ad50f', 'c9cafc6c15ee40d2b7fba9264b2f6406'],
             'bottom-k memscores': ['8002808d66f84a27b0ad9358a65f28f7', '36470106ec524a87b3e0b79c0e155123', 'b0b31cec3fe045d6a894f8fed686d3da', '2afa12d886ac4152b0c9e4ef9d7423ff', '217cbd7d2ca64066bd3aa44f3d4d7f5a'],
             'middle-k memsocres': ['ce62375f56f640f3b54604ee05a7a822', 'd80a0a58ecca4f6ab532ccfbd3ec2626', '05a411228036473580bfa7018b2a4e2f', '11380ab8acaf465e8e75ec1f715f0319', '0867c505763043f484af3714838fb173'],
@@ -61,8 +61,8 @@ def standard_benchmarks():
     # assert runs_standard_benchmarks['cifar10'].keys() == runs_standard_benchmarks['cifar100'].keys() == runs_standard_benchmarks['tiny-imagenet'].keys()
     algorithms = list(runs_standard_benchmarks['cifar100'].keys())
 
-    # mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
-    mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
+    mlruns_path = '///home/jkozal/Documents/PWr/memorization-cl/memorization-cl/mlruns/'
+    # mlruns_path = '///home/jedrzejkozal/Documents/memorization-cl/mlruns/'
     client = mlflow.tracking.MlflowClient(mlruns_path)
 
     dataset_experiments = {

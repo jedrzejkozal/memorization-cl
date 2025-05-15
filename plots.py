@@ -92,13 +92,19 @@ def main():
         accs = results[algorithm_name]
         acc_std = results_std[algorithm_name]
         series_buffer_sizes = [buf_size for buf_size in buffer_sizes if algorithm_name in runs_buffer_sizes[buf_size]]
-        plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.0, color=algortihm_colors[algorithm_name])
+        plt.plot(series_buffer_sizes, accs, label=algorithm_name, linewidth=1.5, color=algortihm_colors[algorithm_name])
         plt.errorbar(series_buffer_sizes, accs, yerr=acc_std, linewidth=1.0, color=algortihm_colors[algorithm_name], capsize=3)
 
     plt.axhline(y=68.362, color='black', linestyle='--', linewidth=1.0,)  # label='y=68.362')
-    plt.legend()
-    plt.xlabel('buffer size')
-    plt.ylabel('test accuracy')
+    plt.legend(fontsize=12, frameon=False)
+    plt.xlabel('buffer size', fontsize=16)
+    plt.ylabel('test accuracy', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+    plt.xticks([500, 10000, 20000, 30000, 40000])
+
+    plt.tight_layout()
 
     # plt.subplot(1, 2, 2)
     # algorithms = ['bottom-k memscores', 'middle-k memsocres', 'high bottom-k', 'high middle-k']

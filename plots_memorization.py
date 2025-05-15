@@ -79,11 +79,14 @@ def plot_results(runs_dict, run_experiments):
         selected_lt_acc = results_longtail['er'][task_idx]
 
         task_x = list(range(task_idx, 10))
-        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color)
-        plt.plot(task_x, selected_lt_acc, '--', c=color)
-        plt.xlabel('Task')
-        plt.ylabel('Accuracy')
-        plt.legend()
+        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color, linewidth=2)
+        plt.plot(task_x, selected_lt_acc, '--', c=color, linewidth=1.5)
+    plt.xlabel('Task', fontsize=16)
+    plt.ylabel('Accuracy', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.legend(fontsize=12, frameon=False)
+    plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
     plt.subplot(1, 3, 2)
     for task_idx, color in zip(range(7), color_range):
@@ -91,11 +94,14 @@ def plot_results(runs_dict, run_experiments):
         selected_lt_acc = results_longtail['full'][task_idx]
 
         task_x = list(range(task_idx, 10))
-        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color)
-        plt.plot(task_x, selected_lt_acc, '--', c=color)
-        plt.xlabel('Task')
-        plt.ylabel('Accuracy')
-        plt.legend()
+        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color, linewidth=2)
+        plt.plot(task_x, selected_lt_acc, '--', c=color, linewidth=1.5)
+    plt.xlabel('Task', fontsize=16)
+    plt.ylabel('Accuracy', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.legend(fontsize=12, frameon=False)
+    plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
     plt.subplot(1, 3, 3)
     for task_idx, color in zip(range(7), color_range):
@@ -103,11 +109,16 @@ def plot_results(runs_dict, run_experiments):
         selected_lt_acc = results_longtail['lwf'][task_idx]
 
         task_x = list(range(task_idx, 10))
-        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color)
-        plt.plot(task_x, selected_lt_acc, '--', c=color)
-        plt.xlabel('Task')
-        plt.ylabel('Accuracy')
-        plt.legend()
+        plt.plot(task_x, selected_task_acc, label=f'Task {task_idx}', c=color, linewidth=2)
+        plt.plot(task_x, selected_lt_acc, '--', c=color, linewidth=1.5)
+    plt.xlabel('Task', fontsize=16)
+    plt.ylabel('Accuracy', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.legend(fontsize=12, frameon=False)
+    plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+
+    plt.tight_layout()
 
 
 def get_task_acc(run_id, experiment_id, task_id):
