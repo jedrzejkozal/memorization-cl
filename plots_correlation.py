@@ -168,7 +168,7 @@ def compute_mahalanobis_norm_dist(fvs, labels, class_fvs):
     return mahalanobis_normalized_distances
 
 
-def compute_icarl_ranks(labels, class_fvs, class_means):
+def compute_icarl_ranks(labels, class_fvs):
     class_means = compute_means(class_fvs)
 
     icarl_ranks = {}
