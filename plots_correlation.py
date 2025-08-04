@@ -27,29 +27,29 @@ def main():
         class_fvs[label.item()].append(fv)
     class_fvs = {label: torch.stack(fv) for label, fv in class_fvs.items()}
 
-    l2_distances = compute_l2_dist(fvs, labels, class_fvs)
-    l2_plot(l2_distances)
+    # l2_distances = compute_l2_dist(fvs, labels, class_fvs)
+    # l2_plot(l2_distances)
 
-    cos_distances = compute_cos_dist(fvs, labels, class_fvs)
-    cos_plot(cos_distances)
+    # cos_distances = compute_cos_dist(fvs, labels, class_fvs)
+    # cos_plot(cos_distances)
 
-    mahalanobis_distances = compute_mahalanobis_dist(fvs, labels, class_fvs)
-    mahalanobis_plot(mahalanobis_distances)
+    # mahalanobis_distances = compute_mahalanobis_dist(fvs, labels, class_fvs)
+    # mahalanobis_plot(mahalanobis_distances)
 
-    mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
-    mahalanobis_norm_plot(mahalanobis_norm_distances)
+    # mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
+    # mahalanobis_norm_plot(mahalanobis_norm_distances)
 
     icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
     icarl_plot(icarl_ranks_list)
 
-    lass_plot()
+    # lass_plot()
 
-    cw_plot()
+    # cw_plot()
 
-    feldman_plot()
+    # feldman_plot()
 
-    training_iter_plot()
-    training_iter_vs_feldman_plot()
+    # training_iter_plot()
+    # training_iter_vs_feldman_plot()
 
     plt.show()
 
@@ -188,6 +188,8 @@ def compute_icarl_ranks(labels, class_fvs):
                     if idx_k.item() not in selected_idxs:
                         current_avrg.append(fv[idx_k])
                         selected_idxs.append(idx_k.item())
+                        break
+            assert list(sorted(selected_idxs)) == list(range(len(selected_idxs)))
 
             icarl_class_ranks = [0 for _ in range(len(fv))]
             for i, idx_k in enumerate(selected_idxs):
