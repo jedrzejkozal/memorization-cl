@@ -15,17 +15,17 @@ from utils.conf import base_path_dataset as base_path
 
 
 def main():
-    device = 'cuda:0'
-    net = resnet18(n_classes=100)
-    net.load_state_dict(torch.load('trained_weights/old_method/whole_dataset/resnet_cifar100.pth'))
-    net.to(device)
+    # device = 'cuda:0'
+    # net = resnet18(n_classes=100)
+    # net.load_state_dict(torch.load('trained_weights/old_method/whole_dataset/resnet_cifar100.pth'))
+    # net.to(device)
 
-    fvs, labels = extract_features(net, device)
+    # fvs, labels = extract_features(net, device)
 
-    class_fvs = collections.defaultdict(list)
-    for fv, label in zip(fvs, labels):
-        class_fvs[label.item()].append(fv)
-    class_fvs = {label: torch.stack(fv) for label, fv in class_fvs.items()}
+    # class_fvs = collections.defaultdict(list)
+    # for fv, label in zip(fvs, labels):
+    #     class_fvs[label.item()].append(fv)
+    # class_fvs = {label: torch.stack(fv) for label, fv in class_fvs.items()}
 
     # l2_distances = compute_l2_dist(fvs, labels, class_fvs)
     # l2_plot(l2_distances)
@@ -39,12 +39,12 @@ def main():
     # mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
     # mahalanobis_norm_plot(mahalanobis_norm_distances)
 
-    icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
-    icarl_plot(icarl_ranks_list)
+    # icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
+    # icarl_plot(icarl_ranks_list)
 
-    # lass_plot()
+    lass_plot()
 
-    # cw_plot()
+    cw_plot()
 
     # feldman_plot()
 
@@ -128,7 +128,6 @@ def compute_mahalanobis_dist(fvs, labels, class_fvs):
             mahalanobis_distances.append(distance.item())
 
     mahalanobis_distances = torch.tensor(mahalanobis_distances)
-    print(mahalanobis_distances[:10])
     return mahalanobis_distances
 
 
@@ -373,7 +372,7 @@ def training_iter_vs_feldman_plot():
 
 
 def read_memorization_scres():
-    memorisation_file_path = '/home/jkozal/Documents/PWr/memorization-cl/leave-one-out/memorisation.txt'
+    memorisation_file_path = 'leave-one-out/memorisation.txt'
     mem_scores_old = {}
     with open(memorisation_file_path, 'r') as f:
         for line in f.readlines():
@@ -381,11 +380,10 @@ def read_memorization_scres():
             idx, prob = int(idx), float(prob)
             mem_scores_old[idx] = prob
 
-    leave_one_out_probs = np.load('/home/jkozal/Documents/PWr/memorization-cl/leave-one-out/orginal_probs.npy')
+    leave_one_out_probs = np.load('leave-one-out/orginal_probs.npy')
     leave_one_out_probs_selected = []
     for i in mem_scores_old:
         leave_one_out_probs_selected.append(leave_one_out_probs[i])
-    # print(len(leave_one_out_probs_selected))
 
     mem_scores_old_values = list(mem_scores_old.values())
     mem_scores_old_values_correct = leave_one_out_probs_selected - np.array(mem_scores_old_values)
