@@ -1,57 +1,164 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+import seaborn as sns
+from scipy.stats import pearsonr, spearmanr, kendalltau
 import torch
 import torch.nn as nn
 import collections
-# import copy
 
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import CIFAR100
-# from tqdm import tqdm
 
 from backbones.resnet import resnet18
 from utils.conf import base_path_dataset as base_path
 
 
 def main():
-    # device = 'cuda:0'
-    # net = resnet18(n_classes=100)
-    # net.load_state_dict(torch.load('trained_weights/old_method/whole_dataset/resnet_cifar100.pth'))
-    # net.to(device)
+    df = preprocess_data()
 
-    # fvs, labels = extract_features(net, device)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["l2"],
+        x_label="Original Memorization Scores",
+        y_label="Euclidean Distances",
+        plot_filename="figures/original_mem_scores_vs_l2.pdf",
+    )
 
-    # class_fvs = collections.defaultdict(list)
-    # for fv, label in zip(fvs, labels):
-    #     class_fvs[label.item()].append(fv)
-    # class_fvs = {label: torch.stack(fv) for label, fv in class_fvs.items()}
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["cosine"],
+        x_label="Original Memorization Scores",
+        y_label="Cosine Distances",
+        plot_filename="figures/original_mem_scores_vs_cosine.pdf",
+    )
 
-    # l2_distances = compute_l2_dist(fvs, labels, class_fvs)
-    # l2_plot(l2_distances)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["mahalanobis"],
+        x_label="Original Memorization Scores",
+        y_label="Mahalanobis Distances",
+        plot_filename="figures/original_mem_scores_vs_mahalanobis.pdf",
+    )
 
-    # cos_distances = compute_cos_dist(fvs, labels, class_fvs)
-    # cos_plot(cos_distances)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["mahalanobis_norm"],
+        x_label="Original Memorization Scores",
+        y_label="Normalized Mahalanobis Distances",
+        plot_filename="figures/original_mem_scores_vs_mahalanobis_norm.pdf",
+    )
 
-    # mahalanobis_distances = compute_mahalanobis_dist(fvs, labels, class_fvs)
-    # mahalanobis_plot(mahalanobis_distances)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["icarl_rank"],
+        x_label="Original Memorization Scores",
+        y_label="iCaRL Ranks",
+        plot_filename="figures/original_mem_scores_vs_icarl.pdf",
+    )
 
-    # mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
-    # mahalanobis_norm_plot(mahalanobis_norm_distances)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["lass"],
+        x_label="Original Memorization Scores",
+        y_label="LASS Distances",
+        plot_filename="figures/original_mem_scores_vs_lass.pdf",
+    )
 
-    # icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
-    # icarl_plot(icarl_ranks_list)
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["carlini_wagner"],
+        x_label="Original Memorization Scores",
+        y_label="Carlini-Wagner Distances",
+        plot_filename="figures/original_mem_scores_vs_cw.pdf",
+    )
 
-    lass_plot()
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["mem_feldman"],
+        x_label="Original Memorization Scores",
+        y_label="Feldman Estimates",
+        plot_filename="figures/original_mem_scores_vs_feldman.pdf",
+    )
 
-    cw_plot()
+    regression_plot(
+        x_data=df["mem_original"],
+        y_data=df["trained_iter"],
+        x_label="Original Memorization Scores",
+        y_label="Training Iterations",
+        plot_filename="figures/original_mem_scores_vs_training_iter.pdf",
+    )
 
-    # feldman_plot()
+    regression_plot(
+        x_data=df["mem_feldman"],
+        y_data=df["trained_iter"],
+        x_label="Feldman Estimates",
+        y_label="Training Iterations",
+        plot_filename="figures/feldman_vs_training_iter.pdf",
+    )
 
-    # training_iter_plot()
-    # training_iter_vs_feldman_plot()
 
-    plt.show()
+def preprocess_data():
+    device = 'cuda:0'
+    net = resnet18(n_classes=100)
+    net.load_state_dict(torch.load('trained_weights/old_method/whole_dataset/resnet_cifar100.pth'))
+    net.to(device)
+
+    fvs, labels = extract_features(net, device)
+    class_fvs = collections.defaultdict(list)
+    for fv, label in zip(fvs, labels):
+        class_fvs[label.item()].append(fv)
+    class_fvs = {label: torch.stack(fv) for label, fv in class_fvs.items()}
+
+    df = pd.read_csv("leave-one-out/memorisation.txt", sep=":", names=["idx", "p_full"])
+
+    # Leave-one-out probabilities
+    p_leave = np.load("leave-one-out/orginal_probs.npy")
+    df["p_leave_one_out"] = df["idx"].map(dict(enumerate(p_leave)))
+
+    # Original memorization scores
+    df["mem_original"] = df["p_leave_one_out"] - df["p_full"]
+
+    # Euclidean distances
+    l2_distances = compute_l2_dist(fvs, labels, class_fvs)
+    df["l2"] = df["idx"].map(dict(enumerate(l2_distances)))
+
+    # Cosine distances
+    cos_distances = compute_cos_dist(fvs, labels, class_fvs)
+    df["cosine"] = df["idx"].map(dict(enumerate(cos_distances)))
+
+    # Mahalanobis distances
+    mahalanobis_distances = compute_mahalanobis_dist(fvs, labels, class_fvs)
+    df["mahalanobis"] = df["idx"].map(dict(enumerate(mahalanobis_distances)))
+
+    # Normalized Mahalanobis distances
+    mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
+    df["mahalanobis_norm"] = df["idx"].map(dict(enumerate(mahalanobis_norm_distances)))
+
+    # iCaRL ranks
+    icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
+    df["icarl_rank"] = df["idx"].map(dict(enumerate(icarl_ranks_list)))
+
+    # Lass distances
+    lass_distances = np.load('LASS_dsitance.npy')
+    df["lass"] = df["idx"].map(dict(enumerate(lass_distances)))
+
+    # Carlini Wagner distances
+    carlini_wagner = np.load('cw_attack.npy')
+    df["carlini_wagner"] = df["idx"].map(dict(enumerate(carlini_wagner)))
+
+    # Feldman estimates
+    mem_feldman = np.load("datasets/memorsation_scores_cifar100.npy")
+    df["mem_feldman"] = df["idx"].map(dict(enumerate(mem_feldman)))
+
+    # Trained iter estimates
+    trained_order = np.load("trained_order.npy")
+    trained_iteration = np.load("trained_iteration.npy")
+    df["trained_iter"] = df["idx"].map(dict(zip(trained_order, trained_iteration)))
+
+    return df[88:]
 
 
 def extract_features(net, device):
@@ -221,190 +328,54 @@ def compute_cov(class_fvs):
             class_covariances[label] = cov
     return class_covariances
 
+def regression_plot(
+    x_data: pd.Series,
+    y_data: pd.Series,
+    x_label: str = "",
+    y_label: str = "",
+    x_lim: tuple = None,
+    y_lim: tuple = None,
+    plot_filename: str = "",
+):
+    pearson, _ = pearsonr(x_data, y_data)
+    spearman, _ = spearmanr(x_data, y_data)
+    kendall, _ = kendalltau(x_data, y_data)
 
-def l2_plot(l2_distances):
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    l2_dist_selected = []
-    for i in mem_scores_old:
-        l2_dist_selected.append(l2_distances[i])
-    l2_dist_selected = l2_dist_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, l2_dist_selected, 'Original Memorization Scores', 'Euclidean Distances')
-
-
-def cos_plot(cos_distances):
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    cos_dist_selected = []
-    for i in mem_scores_old:
-        cos_dist_selected.append(cos_distances[i])
-    cos_dist_selected = cos_dist_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, cos_dist_selected, 'Original Memorization Scores', 'Cosine Distances')
-
-
-def mahalanobis_plot(mahalanobis_distances):
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    mahalanobis_dist_selected = []
-    for i in mem_scores_old:
-        mahalanobis_dist_selected.append(mahalanobis_distances[i])
-    mahalanobis_dist_selected = mahalanobis_dist_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, mahalanobis_dist_selected, 'Original Memorization Scores', 'Mahalanobis Distances')
-
-
-def mahalanobis_norm_plot(mahalanobis_norm_distances):
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    mahalanobis_norm_dist_selected = []
-    for i in mem_scores_old:
-        mahalanobis_norm_dist_selected.append(mahalanobis_norm_distances[i])
-    mahalanobis_norm_dist_selected = mahalanobis_norm_dist_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, mahalanobis_norm_dist_selected, 'Original Memorization Scores', 'Normalized Mahalanobis Distances')
-
-
-def icarl_plot(icarl_ranks):
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    icarl_ranks_selected = []
-    for i in mem_scores_old:
-        icarl_ranks_selected.append(icarl_ranks[i])
-    icarl_ranks_selected = icarl_ranks_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, icarl_ranks_selected, 'Original Memorization Scores', 'iCaRL Ranks')
-
-
-def lass_plot():
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    diffs_LASS = np.load('LASS_dsitance.npy')
-    diffs_selected = []
-    for i in mem_scores_old:
-        diffs_selected.append(diffs_LASS[i])
-    diffs_selected = diffs_selected[88:]
-    diffs_selected = np.array(diffs_selected)
-
-    plot_correlations(mem_scores_old_values_correct, diffs_selected, 'Original Memorization Scores', 'LASS Distances')
-
-
-def cw_plot():
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    diffs_carlini = np.load('cw_attack.npy')
-    diffs_selected = []
-    for i in mem_scores_old:
-        diffs_selected.append(diffs_carlini[i])
-    diffs_selected = diffs_selected[88:]
-    diffs_selected = np.array(diffs_selected)
-
-    plot_correlations(mem_scores_old_values_correct, diffs_selected, 'Original Memorization Scores', 'Carlini-Wagner Distances')
-
-
-def feldman_plot():
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    memorisation_scores_whole = np.load('datasets/memorsation_scores_cifar100.npy')
-    memorisation_scores_whole_selected = []
-    for i in mem_scores_old:
-        memorisation_scores_whole_selected.append(memorisation_scores_whole[i])
-    memorisation_scores_whole_selected = memorisation_scores_whole_selected[88:]
-
-    plot_correlations(mem_scores_old_values_correct, memorisation_scores_whole_selected, 'Original Memorization Scores', 'Feldman Estimates')
-
-
-def training_iter_plot():
-    mem_scores_old, mem_scores_old_values_correct = read_memorization_scres()
-    mem_scores_old_values_correct = mem_scores_old_values_correct[88:]
-
-    trained_order = np.load('trained_order.npy')
-    trained_iteration = np.load('trained_iteration.npy')
-    # print('trained_order = ', trained_order)
-    # print('trained_iteration = ', trained_iteration)
-    # print(trained_order.shape)
-    # print(trained_iteration.shape)
-
-    trained_iter = np.zeros(50000)
-    for i, iter in zip(trained_order, trained_iteration):
-        trained_iter[i] = iter
-
-    trained_iter_selected = []
-    for i in mem_scores_old:
-        trained_iter_selected.append(trained_iter[i])
-    trained_iter_selected = trained_iter_selected[88:]
-    # print(trained_iter_selected)
-
-    plot_correlations(mem_scores_old_values_correct, trained_iter_selected, 'Original Memorization Scores', 'Training Iterations')
-
-
-def training_iter_vs_feldman_plot():
-    mem_scores_old, _ = read_memorization_scres()
-
-    trained_order = np.load('trained_order.npy')
-    trained_iteration = np.load('trained_iteration.npy')
-
-    trained_iter = np.zeros(50000)
-    for i, iter in zip(trained_order, trained_iteration):
-        trained_iter[i] = iter
-
-    trained_iter_selected = []
-    for i in mem_scores_old:
-        trained_iter_selected.append(trained_iter[i])
-    trained_iter_selected = trained_iter_selected[88:]
-
-    memorisation_scores_whole = np.load('datasets/memorsation_scores_cifar100.npy')
-    memorisation_scores_whole_selected = []
-    for i in mem_scores_old:
-        memorisation_scores_whole_selected.append(memorisation_scores_whole[i])
-    memorisation_scores_whole_selected = memorisation_scores_whole_selected[88:]
-
-    plot_correlations(memorisation_scores_whole_selected, trained_iter_selected, 'Feldman Estimator', 'Training Iterations')
-
-
-def read_memorization_scres():
-    memorisation_file_path = 'leave-one-out/memorisation.txt'
-    mem_scores_old = {}
-    with open(memorisation_file_path, 'r') as f:
-        for line in f.readlines():
-            idx, prob = line.split(':')
-            idx, prob = int(idx), float(prob)
-            mem_scores_old[idx] = prob
-
-    leave_one_out_probs = np.load('leave-one-out/orginal_probs.npy')
-    leave_one_out_probs_selected = []
-    for i in mem_scores_old:
-        leave_one_out_probs_selected.append(leave_one_out_probs[i])
-
-    mem_scores_old_values = list(mem_scores_old.values())
-    mem_scores_old_values_correct = leave_one_out_probs_selected - np.array(mem_scores_old_values)
-
-    return mem_scores_old, mem_scores_old_values_correct
-
-
-def plot_correlations(data_x, data_y, x_label, y_label):
-    correlation = np.corrcoef(data_x, data_y)[0, 1]
-    print()
-    print(f'Corelations {x_label} vs {y_label}')
-    print("Correlation Coefficient:", correlation)
-
-    # Plot mem_scores_old_values against icarl_ranks_selected
+    sns.set_theme(style="whitegrid")
     plt.figure(figsize=(8, 6))
-    plt.scatter(data_x, data_y, alpha=0.7)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    # plt.title('Scatter Plot of orginal mem scores vs icarl ranks')
-    plt.grid(True)
+    sns.regplot(
+        x=x_data,
+        y=y_data,
+        scatter_kws={"s": 15, "alpha": 0.75},
+    )
 
+    plt.xlabel(x_label, fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.ylabel(y_label, fontsize=16)
+    plt.yticks(fontsize=14)
+    if x_lim is not None:
+        plt.xlim(x_lim)
+    if y_lim is not None:
+        plt.ylim(y_lim)
+
+    legends = [
+        Line2D([], [], linestyle="", label=f"Pearson, r = {pearson:.3f}"),
+        Line2D([], [], linestyle="", label=f"Spearman, ρ = {spearman:.3f}"),
+        Line2D([], [], linestyle="", label=f"Kendall, τ = {kendall:.3f}"),
+    ]
+
+    plt.legend(
+        handles=legends,
+        title="Correlation Coefficients",
+        title_fontsize=14,
+        fontsize=14,
+        loc="lower right",
+        handletextpad=-3,
+    )
+
+    plt.tight_layout()
+    if plot_filename != "" and len(plot_filename) > 0:
+        plt.savefig(plot_filename, format="pdf", dpi=300)
 
 if __name__ == '__main__':
     main()
