@@ -3,9 +3,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 import argparse
+import multiprocessing
 
-import torch.utils
-import torch.utils.data
 from torch.utils.data import DataLoader, Subset
 from torchvision import transforms
 from torchvision.datasets import CIFAR100, CIFAR10
@@ -72,12 +71,20 @@ def main():
         train_dataset = Subset(train_dataset, selected_indicies)
         labels = np.array(labels)[selected_indicies]
 
-    for repeat_idx in tqdm(range(args.n_repeats)):
-        dataset_indicies = np.array(list(range(len(labels))))
-        train_idx, _ = train_test_split(dataset_indicies, test_size=0.5, random_state=repeat_idx, stratify=labels)
-        train_subset = Subset(train_dataset, train_idx)
-        net = train(train_subset, args.model_name, args.model_width, args.device, args.num_workers, n_classes)
-        torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth')
+    workload = list(range(args.n_repeats))
+    if args.use_multiprocessing:
+        n_gpus = torch.cuda.device_count()
+        chunk_size = len(workload)//n_gpus
+        args_list = []
+        for worker_id in range(n_gpus):
+            workload_chunk = workload[worker_id*chunk_size:(worker_id+1)*chunk_size]
+            if worker_id == n_gpus-1:
+                workload_chunk = workload[worker_id*chunk_size:]
+            args_list.append((args, f'cuda:{worker_id}', train_dataset, n_classes, labels, workload_chunk))
+        with multiprocessing.Pool(processes=n_gpus) as pool:
+            pool.starmap(train_networks, args_list)
+    else:
+        train_networks(args, args.device, train_dataset, n_classes, labels, workload)
 
 
 def parse_args():
@@ -92,9 +99,19 @@ def parse_args():
     parser.add_argument('--dataset_size', type=float, default=1.0, help='fraction of data used in program')
     parser.add_argument('--device', type=str, default='cuda:0', help='device used for training')
     parser.add_argument('--num_workers', type=int, default=4, help='number of workers used in dataloader')
+    parser.add_argument('--use_multiprocessing', action='store_true', help='use mutliprocessing to split the networks training across all avaliable machines')
     args = parser.parse_args()
     assert 0.0 < args.dataset_size <= 1.0, 'dataset_size should be fraction in (0.0, 1.0] interval'
     return args
+
+
+def train_networks(args, device, train_dataset, n_classes, labels, workload):
+    for repeat_idx in tqdm(workload):
+        dataset_indicies = np.array(list(range(len(labels))))
+        train_idx, _ = train_test_split(dataset_indicies, test_size=0.5, random_state=repeat_idx, stratify=labels)
+        train_subset = Subset(train_dataset, train_idx)
+        net = train(train_subset, args.model_name, args.model_width, device, args.num_workers, n_classes)
+        torch.save(net.state_dict(), args.weights_dir / f'resnet_cifar100_repeat_{repeat_idx}.pth')
 
 
 def train(train_subset, model_name='resnet18', model_width=1.0, device='cuda:0', num_workers=10, n_classes=100):
