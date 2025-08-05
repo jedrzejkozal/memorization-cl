@@ -47,6 +47,22 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
         test_lt_accs.append(acc_class_incr)
         test_lt_accs_mask_classes.append(acc_task_incr)
 
+    test_mid_accs, test_mid_accs_mask_classes = [], []
+    for k, mid_loader in enumerate(dataset.middlemem_loaders):
+        if last and k < len(dataset.middlemem_loaders) - 1:
+            continue
+        acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, mid_loader, debug=debug)
+        test_mid_accs.append(acc_class_incr)
+        test_mid_accs_mask_classes.append(acc_task_incr)
+
+    test_low_accs, test_low_accs_mask_classes = [], []
+    for k, low_loader in enumerate(dataset.lowmem_loaders):
+        if last and k < len(dataset.lowmem_loaders) - 1:
+            continue
+        acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, low_loader, debug=debug)
+        test_low_accs.append(acc_class_incr)
+        test_low_accs_mask_classes.append(acc_task_incr)
+
     model.net.train(status)
     print('\nevaluation task train acc:')
     print('{:.2f}'.format(train_acc))
@@ -62,7 +78,19 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
         accs_str += '{:.2f}, '.format(a)
     accs_str = accs_str[:-2]
     print(accs_str)
-    return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
+    print('\nevaluation task midmem accs:')
+    accs_str = ''
+    for a in test_mid_accs:
+        accs_str += '{:.2f}, '.format(a)
+    accs_str = accs_str[:-2]
+    print(accs_str)
+    print('\nevaluation task lowmem accs:')
+    accs_str = ''
+    for a in test_low_accs:
+        accs_str += '{:.2f}, '.format(a)
+    accs_str = accs_str[:-2]
+    print(accs_str)
+    return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs, test_mid_accs, test_low_accs
 
 
 def compute_acc(model, dataset, k, dataloader, debug=False):
@@ -190,7 +218,7 @@ def train(model: ContinualModel, dataset: ContinualBenchmark,
         if hasattr(model, 'end_task'):
             model.end_task(dataset)
 
-        accs = evaluate(model, dataset, debug=args.debug)  # train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
+        accs = evaluate(model, dataset, debug=args.debug)  # train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs, test_mid_accs, test_low_accs
         results.append(accs[2])
         results_mask_classes.append(accs[3])
 

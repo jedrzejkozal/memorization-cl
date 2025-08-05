@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/0/9cdb80d76b2f4f46b37e35f6a344a19a/artifacts
+end_time: 1754048295397
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9cdb80d76b2f4f46b37e35f6a344a19a
+run_name: additional metrics ER CIFAR100 seed 0
+run_uuid: 9cdb80d76b2f4f46b37e35f6a344a19a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1754045780278
+status: 3
+tags: []
+user_id: jkozal

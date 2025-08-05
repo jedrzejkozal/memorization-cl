@@ -82,7 +82,7 @@ class MLFlowLogger(utils.loggers.Logger):
 
     def log_fullacc(self, accs):
         if self.setting == 'class-il':
-            acc_class_il, acc_task_il, acc_longtail = accs
+            acc_class_il, acc_task_il, acc_longtail, acc_mid, acc_low = accs
             self.fullaccs.append(acc_class_il)
             self.fullaccs_mask_classes.append(acc_task_il)
             for t, acc in enumerate(acc_class_il):
@@ -91,6 +91,10 @@ class MLFlowLogger(utils.loggers.Logger):
                 self.log_metric(f'acc_task_il_task_{t}', acc)
             for t, acc in enumerate(acc_longtail):
                 self.log_metric(f'acc_longtail_task_{t}', acc)
+            for t, acc in enumerate(acc_mid):
+                self.log_metric(f'acc_mid_mem_task_{t}', acc)
+            for t, acc in enumerate(acc_low):
+                self.log_metric(f'acc_low_mem_task_{t}', acc)
 
     def add_fwt(self, results, accs, results_mask_classes, accs_mask_classes):
         self.fwt = forward_transfer(results, accs)

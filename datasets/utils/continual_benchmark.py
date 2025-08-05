@@ -31,6 +31,8 @@ class ContinualBenchmark:
         self.train_loader = None
         self.test_loaders = []
         self.longtail_loaders = []
+        self.middlemem_loaders = []
+        self.lowmem_loaders = []
         self.i = 0
         self.args = args
         self.image_size = args.img_size
@@ -144,7 +146,9 @@ class ContinualBenchmark:
 
         dataset.targets = [new_classes[c] for c in dataset.targets]
 
-    def store_masked_loaders(self, train_dataset: Dataset, test_dataset: Dataset, longtail_dataset: Dataset) -> Tuple[DataLoader, DataLoader]:
+    def store_masked_loaders(
+            self, train_dataset: Dataset, test_dataset: Dataset,
+            longtail_dataset: Dataset, middlemem_dataset: Dataset = None, lowmem_dataset: Dataset = None) -> Tuple[DataLoader, DataLoader]:
         """
         Divides the dataset into tasks.
         :param train_dataset: train dataset
@@ -178,6 +182,20 @@ class ContinualBenchmark:
             longtail_loader = DataLoader(longtail_dataset,
                                          batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
             self.longtail_loaders.append(longtail_loader)
+        if middlemem_dataset is not None:
+            sample_mask = np.logical_and(np.array(middlemem_dataset.targets) >= self.i,
+                                         np.array(middlemem_dataset.targets) < self.i + n_classes)
+            self.select_subset(middlemem_dataset, sample_mask)
+            middlemem_loader = DataLoader(middlemem_dataset,
+                                          batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+            self.middlemem_loaders.append(middlemem_loader)
+        if lowmem_dataset is not None:
+            sample_mask = np.logical_and(np.array(lowmem_dataset.targets) >= self.i,
+                                         np.array(lowmem_dataset.targets) < self.i + n_classes)
+            self.select_subset(lowmem_dataset, sample_mask)
+            lowmem_loader = DataLoader(lowmem_dataset,
+                                       batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+            self.lowmem_loaders.append(lowmem_loader)
 
         self.i += n_classes
         return train_loader, test_loader
