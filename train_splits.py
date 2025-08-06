@@ -19,6 +19,8 @@ from utils.conf import base_path_dataset as base_path
 
 def main():
     args = parse_args()
+    if args.use_multiprocessing:
+        torch.multiprocessing.set_start_method('spawn')
 
     if args.dataset_name == 'cifar100':
         train_transform = transforms.Compose([
