@@ -123,40 +123,40 @@ def preprocess_data():
 
     # Euclidean distances
     l2_distances = compute_l2_dist(fvs, labels, class_fvs)
-    df["l2"] = df["idx"].map(dict(enumerate(l2_distances)))
+    df["l2"] = df["idx"].map(dict(enumerate(l2_distances.tolist())))
 
     # Cosine distances
     cos_distances = compute_cos_dist(fvs, labels, class_fvs)
-    df["cosine"] = df["idx"].map(dict(enumerate(cos_distances)))
+    df["cosine"] = df["idx"].map(dict(enumerate(cos_distances.tolist())))
 
     # Mahalanobis distances
     mahalanobis_distances = compute_mahalanobis_dist(fvs, labels, class_fvs)
-    df["mahalanobis"] = df["idx"].map(dict(enumerate(mahalanobis_distances)))
+    df["mahalanobis"] = df["idx"].map(dict(enumerate(mahalanobis_distances.tolist())))
 
     # Normalized Mahalanobis distances
     mahalanobis_norm_distances = compute_mahalanobis_norm_dist(fvs, labels, class_fvs)
-    df["mahalanobis_norm"] = df["idx"].map(dict(enumerate(mahalanobis_norm_distances)))
+    df["mahalanobis_norm"] = df["idx"].map(dict(enumerate(mahalanobis_norm_distances.tolist())))
 
     # iCaRL ranks
     icarl_ranks_list = compute_icarl_ranks(labels, class_fvs)
     df["icarl_rank"] = df["idx"].map(dict(enumerate(icarl_ranks_list)))
 
     # Lass distances
-    lass_distances = np.load('LASS_dsitance.npy')
-    df["lass"] = df["idx"].map(dict(enumerate(lass_distances)))
+    lass_distances: np.array = np.load('LASS_dsitance.npy')
+    df["lass"] = df["idx"].map(dict(enumerate(lass_distances.tolist())))
 
     # Carlini Wagner distances
     carlini_wagner = np.load('cw_attack.npy')
-    df["carlini_wagner"] = df["idx"].map(dict(enumerate(carlini_wagner)))
+    df["carlini_wagner"] = df["idx"].map(dict(enumerate(carlini_wagner.tolist())))
 
     # Feldman estimates
     mem_feldman = np.load("datasets/memorsation_scores_cifar100.npy")
-    df["mem_feldman"] = df["idx"].map(dict(enumerate(mem_feldman)))
+    df["mem_feldman"] = df["idx"].map(dict(enumerate(mem_feldman.tolist())))
 
     # Trained iter estimates
     trained_order = np.load("trained_order.npy")
     trained_iteration = np.load("trained_iteration.npy")
-    df["trained_iter"] = df["idx"].map(dict(zip(trained_order, trained_iteration)))
+    df["trained_iter"] = df["idx"].map(dict(zip(trained_order.tolist(), trained_iteration.tolist())))
 
     return df[88:]
 
@@ -328,6 +328,7 @@ def compute_cov(class_fvs):
             class_covariances[label] = cov
     return class_covariances
 
+
 def regression_plot(
     x_data: pd.Series,
     y_data: pd.Series,
@@ -376,6 +377,7 @@ def regression_plot(
     plt.tight_layout()
     if plot_filename != "" and len(plot_filename) > 0:
         plt.savefig(plot_filename, format="pdf", dpi=300)
+
 
 if __name__ == '__main__':
     main()
