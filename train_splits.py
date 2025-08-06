@@ -21,6 +21,7 @@ def main():
     args = parse_args()
     if args.use_multiprocessing:
         torch.multiprocessing.set_start_method('spawn')
+        args.num_workers = 0
 
     if args.dataset_name == 'cifar100':
         train_transform = transforms.Compose([
