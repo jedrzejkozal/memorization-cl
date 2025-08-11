@@ -11,7 +11,9 @@
 
 # missing CIFAR10 runs for dataset size 1.0
 
-# TODO
+python train_splits.py --dataset_name="cifar10" --weights_dir=trained_weights/cifar10_subset_10/ --dataset_size=1.0 --device="cuda:0" --num_workers=4 --use_multiprocessing
+
+python eval_splits.py --dataset_name="cifar10" --weights_dir=trained_weights/cifar10_subset_10/ --dataset_size=1.0 --device="cuda:0" --num_workers=4 --out_filename="memorsation_scores_cifar10_10.npy"
 
 git pull
 git pull
@@ -20,7 +22,7 @@ git pull
 git commit -m "add memorization results for cifar10 1.0 subset"
 git push
 
-# cifar100 different depth
+# cifar100 different architectures rerun
 
 python train_splits.py --dataset_name="cifar100" --model_name=resnet34 --weights_dir=trained_weights/cifar100_resnet34_rerun/ --weight_decay=1e-3 --batch_size=32 --n_epochs=50 --lr=0.03 --num_workers=4 --use_multiprocessing
 python train_splits.py --dataset_name="cifar100" --model_name=resnet50 --weights_dir=trained_weights/cifar100_resnet50_rerun/ --weight_decay=1e-3 --batch_size=32 --n_epochs=50 --lr=0.03 --num_workers=4 --use_multiprocessing
