@@ -44,7 +44,6 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
 
     train_acc, train_acc_mask_classes = compute_acc(model, dataset, k, dataset.train_loader, debug=debug)
 
-    model.net.train(status)
     print('\nevaluation task train acc:')
     print('{:.2f}'.format(train_acc))
     print('\nevaluation task test accs:')
@@ -69,6 +68,25 @@ def evaluate(model: ContinualModel, dataset: ContinualBenchmark, last=False, deb
             accs_str += '{:.2f}, '.format(a)
         accs_str = accs_str[:-2]
         print(accs_str)
+
+    for mem_range in [(0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 0.9), (0.9, 1.0)]:
+        test_lt_accs, test_lt_accs_mask_classes = [], []
+        for k, lt_loader in enumerate(dataset.longtail_loaders_ranges[mem_range]):
+            if last and k < len(dataset.longtail_loaders) - 1:
+                continue
+            acc_class_incr, acc_task_incr = compute_acc(model, dataset, k, lt_loader, debug=debug)
+            test_lt_accs.append(acc_class_incr)
+            test_lt_accs_mask_classes.append(acc_task_incr)
+
+        print(f'\nevaluation task longtail accs memorization range = {mem_range}:')
+        accs_str = ''
+        for a in test_lt_accs:
+            accs_str += '{:.2f}, '.format(a)
+        accs_str = accs_str[:-2]
+        print(accs_str)
+
+    model.net.train(status)
+
     return train_acc, train_acc_mask_classes, test_accs, test_accs_mask_classes, test_lt_accs
 
 

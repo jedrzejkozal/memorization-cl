@@ -39,6 +39,13 @@ class ContinualBenchmark:
             0.75: [],
             0.9: [],
         }
+        self.longtail_loaders_ranges = {
+            (0, 0.25): [],
+            (0.25, 0.5): [],
+            (0.5, 0.75): [],
+            (0.75, 0.9): [],
+            (0.9, 1.0): [],
+        }
 
         self.i = 0
         self.args = args
@@ -149,7 +156,9 @@ class ContinualBenchmark:
         """
         train_labels = dataset.targets
         classes = np.unique(train_labels)
-        new_classes = np.random.RandomState(seed=self.args.seed).permutation(classes)
+        max_label = np.max(classes)
+        class_range = list(range(max_label+1))
+        new_classes = np.random.RandomState(seed=self.args.seed).permutation(class_range)
 
         dataset.targets = [new_classes[c] for c in dataset.targets]
 

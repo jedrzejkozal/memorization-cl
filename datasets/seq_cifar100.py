@@ -98,7 +98,7 @@ class SequentialCIFAR100(ContinualBenchmark):
 
         for threshold in [0.25, 0.5, 0.75, 0.9]:
             longtail_indexes = np.argwhere(memorisation_scores > threshold).flatten()
-            # print(f'longtail_indexes threshold {threshold} len = ', len(longtail_indexes))
+            print(f'threshold {threshold} num samples = ', len(longtail_indexes))
             longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
             self.select_subset(longtail_dataset, longtail_indexes)
             self.permute_tasks(longtail_dataset)
@@ -111,6 +111,28 @@ class SequentialCIFAR100(ContinualBenchmark):
             # self.longtail_loaders.append(longtail_loader)
             loaders_list = self.longtail_loaders_thresh[threshold]
             loaders_list.append(longtail_loader)
+
+        print()
+        for range_borders in [(0, 0.25), (0.25, 0.5), (0.5, 0.75), (0.75, 0.9), (0.9, 1.0)]:
+            range_begin, range_end = range_borders
+            if range_begin == 0:
+                range_begin = -0.5
+            if range_end == 1.0:
+                range_end = 1.5
+            longtail_indexes = np.argwhere(np.logical_and(range_begin <= memorisation_scores, memorisation_scores < range_end)).flatten()
+            print(f'range {range_borders} num samples = ', len(longtail_indexes))
+            longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+            self.select_subset(longtail_dataset, longtail_indexes)
+            self.permute_tasks(longtail_dataset)
+
+            longtail_mask = np.logical_and(np.array(longtail_dataset.targets) >= self.i,
+                                           np.array(longtail_dataset.targets) < self.i + self.N_CLASSES_PER_TASK)
+            self.select_subset(longtail_dataset, longtail_mask)
+            longtail_loader = DataLoader(longtail_dataset,
+                                         batch_size=self.args.batch_size, shuffle=False, num_workers=self.args.num_workers)
+            loaders_list = self.longtail_loaders_ranges[range_borders]
+            loaders_list.append(longtail_loader)
+        print()
 
         train, test = self.store_masked_loaders(train_dataset, test_dataset, longtail_dataset)
 
