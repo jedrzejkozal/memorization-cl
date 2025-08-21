@@ -1,0 +1,15 @@
+artifact_uri: /home/jedrzejkozal/Documents/memorization-cl/mlruns/976651693442159172/d50576369591440d86f89fd601df0649/artifacts
+end_time: 1755797725691
+entry_point_name: ''
+experiment_id: '976651693442159172'
+lifecycle_stage: active
+run_id: d50576369591440d86f89fd601df0649
+run_name: herding seed 3
+run_uuid: d50576369591440d86f89fd601df0649
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1755794939698
+status: 3
+tags: []
+user_id: jkozal
