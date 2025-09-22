@@ -10,7 +10,7 @@ We find that learning examples with high memorization scores are forgotten faste
 To showcase how memorization can be used during incremental training, we introduce a memorization proxy and use it in the buffer policy problem. We demonstrate that including samples with a higher proxy memorization score is beneficial when the buffer size is large.
 
 
-![our main results](memscores_results.png)
+![our main results](acc_subsets_combined.png)
 
 
 ## Requirements

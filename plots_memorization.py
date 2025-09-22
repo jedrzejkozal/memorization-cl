@@ -28,13 +28,15 @@ def main():
             'lwf': ['e702c66202f04165ab80503f9f784bc5', 'e065e93d788345099c63c87e40b118da', 'a37240d03cc84ed093fa03945cc412ae', '4ddde3026ade4ca38495329959549375', '5df2d7e897c34a9491e06f758eda0570']
         },
     }
+    runs_task0 = ['9cdb80d76b2f4f46b37e35f6a344a19a', 'a0712fb4d9394635993f849ac02716df', 'e0a8abcb4d01455792eb36cac08e7b7a', '58c872641cff4029bc22249fb3babb14', '1c298899806946e28533ca3742e5e629']
     run_experiments = {
         'er': '976651693442159172',
         'full': '0',
         'lwf': '0',
+        'task0': '0'
     }
 
-    plot_results(runs_dict[0.25], run_experiments)
+    plot_results(runs_dict[0.25], run_experiments, runs_task0)
     run_experiments['er'] = '0'
     plot_results(runs_dict[0.5], run_experiments)
     plot_results(runs_dict[0.75], run_experiments)
@@ -42,8 +44,9 @@ def main():
     plt.show()
 
 
-def plot_results(runs_dict, run_experiments):
+def plot_results(runs_dict, run_experiments, task_0_runs=None):
     algorithms = list(runs_dict.keys())
+    n_plots = 3 if task_0_runs is None else 4
     n_tasks = 7
     results = {a: [] for a in algorithms}
     results_std = {a: [] for a in algorithms}
@@ -73,7 +76,7 @@ def plot_results(runs_dict, run_experiments):
     color_range = plt.cm.tab10.colors
     plt.figure(figsize=(18, 4))
 
-    plt.subplot(1, 3, 1)
+    plt.subplot(1, n_plots, 1)
     for task_idx, color in zip(range(7), color_range):
         selected_task_acc = results['er'][task_idx]
         selected_lt_acc = results_longtail['er'][task_idx]
@@ -88,7 +91,7 @@ def plot_results(runs_dict, run_experiments):
     plt.legend(fontsize=12, frameon=False)
     plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, n_plots, 2)
     for task_idx, color in zip(range(7), color_range):
         selected_task_acc = results['full'][task_idx]
         selected_lt_acc = results_longtail['full'][task_idx]
@@ -103,7 +106,7 @@ def plot_results(runs_dict, run_experiments):
     plt.legend(fontsize=12, frameon=False)
     plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
-    plt.subplot(1, 3, 3)
+    plt.subplot(1, n_plots, 3)
     for task_idx, color in zip(range(7), color_range):
         selected_task_acc = results['lwf'][task_idx]
         selected_lt_acc = results_longtail['lwf'][task_idx]
@@ -118,13 +121,48 @@ def plot_results(runs_dict, run_experiments):
     plt.legend(fontsize=12, frameon=False)
     plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
 
+    if task_0_runs:
+        experiment_id = run_experiments['task0']
+        task_accs = []
+        longtail_accs = []
+        mid_mem_accs = []
+        low_mem_accs = []
+        for run_id in task_0_runs:
+            acc, acc_long, acc_mid, acc_low = get_task_acc(run_id, experiment_id, task_id=0, return_all=True)
+            task_accs.append(acc)
+            longtail_accs.append(acc_long)
+            mid_mem_accs.append(acc_mid)
+            low_mem_accs.append(acc_low)
+
+            task_acc, task_std = reduction(task_accs)
+            long_acc, long_std = reduction(longtail_accs)
+            mid_acc, mid_std = reduction(mid_mem_accs)
+            low_acc, low_std = reduction(low_mem_accs)
+
+        plt.subplot(1, n_plots, 4)
+        task_x = list(range(10))
+        plt.plot(task_x, task_acc, label=f'test acc', c=color_range[0], linewidth=2)
+        plt.plot(task_x, long_acc, '--', label=f'high memorization', c=color_range[0], linewidth=1.5)
+        plt.plot(task_x, mid_acc, ':', label=f'middle memorization', c=color_range[0], linewidth=1.5)
+        plt.plot(task_x, low_acc, '-.', label=f'low memorization', c=color_range[0], linewidth=1.5)
+        plt.xlabel('Task', fontsize=16)
+        plt.ylabel('Accuracy', fontsize=16)
+        plt.xticks(fontsize=14)
+        plt.yticks(fontsize=14)
+        plt.legend(fontsize=12, frameon=False)
+        plt.grid(True, linestyle='--', linewidth=0.5, alpha=0.7)
+
     plt.tight_layout()
 
 
-def get_task_acc(run_id, experiment_id, task_id):
+def get_task_acc(run_id, experiment_id, task_id, return_all=False):
     acc = read_full_metric(experiment_id, run_id, f'acc_class_il_task_{task_id}')
     acc_long = read_full_metric(experiment_id, run_id, f'acc_longtail_task_{task_id}')
-    return acc, acc_long
+    if not return_all:
+        return acc, acc_long
+    acc_middle = read_full_metric(experiment_id, run_id, f'acc_mid_mem_task_{task_id}')
+    acc_low = read_full_metric(experiment_id, run_id, f'acc_low_mem_task_{task_id}')
+    return acc, acc_long, acc_middle, acc_low
 
 
 def read_full_metric(experiment_id, run_id, metric_name):

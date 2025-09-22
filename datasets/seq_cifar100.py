@@ -86,16 +86,28 @@ class SequentialCIFAR100(ContinualBenchmark):
         else:
             test_dataset = TestCIFAR100(base_path() + 'CIFAR100', train=False, download=True, transform=self.test_transform)
         memorisation_scores = np.load('datasets/memorsation_scores_cifar100.npy')
-        longtail_indexes = np.argwhere(memorisation_scores > self.args.memorisation_threshold).flatten()
-        # print('\n\nlongtail_indexes = ', len(longtail_indexes))
-        longtail_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
-        self.select_subset(longtail_dataset, longtail_indexes)
+        highmem_indexes = np.argwhere(memorisation_scores > self.args.memorisation_threshold).flatten()
+        middlemem_indexes = np.argwhere(np.logical_and(memorisation_scores <= self.args.memorisation_threshold, memorisation_scores > 0.1)).flatten()
+        lowmem_indexes = np.argwhere(memorisation_scores <= 0.1).flatten()
+        # print('\n\n')
+        # print('dataset len = ', len(train_dataset))
+        # print('highmem_indexes = ', len(highmem_indexes))
+        # print('middle indexes = ', len(middlemem_indexes))
+        # print('lowmem_indexes = ', len(lowmem_indexes))
+        highmem_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+        self.select_subset(highmem_dataset, highmem_indexes)
+        middlemem_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+        self.select_subset(middlemem_dataset, middlemem_indexes)
+        lowmem_dataset = CIFAR100(base_path() + 'CIFAR100', train=True, download=True, transform=self.test_transform)
+        self.select_subset(lowmem_dataset, lowmem_indexes)
 
         self.permute_tasks(train_dataset)
         self.permute_tasks(test_dataset)
-        self.permute_tasks(longtail_dataset)
+        self.permute_tasks(highmem_dataset)
+        self.permute_tasks(middlemem_dataset)
+        self.permute_tasks(lowmem_dataset)
 
-        train, test = self.store_masked_loaders(train_dataset, test_dataset, longtail_dataset)
+        train, test = self.store_masked_loaders(train_dataset, test_dataset, highmem_dataset, middlemem_dataset, lowmem_dataset)
 
         return train, test
 
